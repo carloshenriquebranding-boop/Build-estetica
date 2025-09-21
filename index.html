@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM Kanban para Clínicas de Estética</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      /* Font is now handled by tailwind.config */
+    }
+    /* Custom scrollbar for Kanban Board */
+    .kanban-scroll::-webkit-scrollbar {
+        height: 8px;
+    }
+    .kanban-scroll::-webkit-scrollbar-track {
+        background: #f1f5f9; /* slate-100 */
+        border-radius: 10px;
+    }
+    .kanban-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1; /* slate-300 */
+        border-radius: 10px;
+    }
+    .kanban-scroll::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; /* slate-400 */
+    }
+
+    .dark .kanban-scroll::-webkit-scrollbar-track {
+        background: #1e293b; /* slate-800 */
+    }
+    .dark .kanban-scroll::-webkit-scrollbar-thumb {
+        background: #475569; /* slate-600 */
+    }
+    .dark .kanban-scroll::-webkit-scrollbar-thumb:hover {
+        background: #64748b; /* slate-500 */
+    }
+    
+    /* Tiptap Table Styles */
+    .ProseMirror table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    .ProseMirror th, .ProseMirror td {
+      border: 1px solid #d1d5db; /* gray-300 */
+      padding: 0.5rem;
+      vertical-align: top;
+      position: relative;
+    }
+    .ProseMirror th {
+      font-weight: bold;
+      background-color: #f3f4f6; /* gray-100 */
+    }
+    .ProseMirror-table-col-resizer {
+        position: absolute;
+        top: 0; right: -2px;
+        width: 4px; height: 100%;
+        cursor: col-resize;
+        user-select: none;
+        background-color: #60a5fa; /* blue-400 */
+        z-index: 20;
+    }
+    .ProseMirror-table-col-resizer.is-resizing {
+        background-color: #ef4444; /* red-500 */
+    }
+    .dark .ProseMirror table,
+    .dark .ProseMirror th,
+    .dark .ProseMirror td {
+        border-color: #475569; /* slate-600 */
+    }
+    .dark .ProseMirror th {
+        background-color: #334155; /* slate-700 */
+    }
+    .dark .ProseMirror td {
+        background-color: transparent;
+    }
+
+    /* Prescription Page Styles */
+    .a4-sheet-container {
+        width: 100%;
+        padding: 2rem;
+        background-color: #f1f5f9; /* slate-100 */
+        overflow: auto;
+    }
+    .dark .a4-sheet-container {
+        background-color: #1e293b; /* slate-800 */
+    }
+    .a4-sheet {
+        background-color: white;
+        width: 210mm;
+        min-height: 297mm;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+    }
+    .dark .a4-sheet {
+        background-color: #0f172a; /* slate-900 */
+    }
+    .prescription-wrapper {
+        box-sizing: border-box;
+        overflow: hidden;
+        border: 1px dashed #d1d5db; /* gray-300 */
+        display: flex;
+        flex-direction: column;
+    }
+    .dark .prescription-wrapper {
+        border-color: #475569; /* slate-600 */
+    }
+    .prescription-wrapper.format-a4 { width: 100%; height: 297mm; }
+    .prescription-wrapper.format-a5 { width: 100%; height: 148.5mm; }
+    .prescription-wrapper.format-a6 { width: 50%; height: 148.5mm; }
+
+    /* Fix for placeholder on contenteditable divs */
+    [contenteditable][data-placeholder]:empty:before {
+      content: attr(data-placeholder);
+      color: #9ca3af; /* gray-400 */
+      pointer-events: none;
+      display: block; /* For line-break */
+    }
+    
+    /* ===== Global Form Element Fixes ===== */
+    /* This ensures all dropdowns (<select>) and their options (<option>) have readable text in both light and dark modes,
+       and provides a consistent appearance across browsers. */
+    select {
+      /* Reset browser-native appearance */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      
+      /* Set default text color for light mode, !important to override conflicts */
+      color: #1e293b !important; /* slate-800 */
+
+      /* Add custom dropdown arrow for consistent look */
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem; /* Make space for the arrow */
+    }
+
+    /* Force options to have dark text and white background in light mode */
+    option {
+        color: #1e293b !important; /* slate-800 */
+        background: #ffffff !important; /* white */
+    }
+
+    .dark select {
+      /* Set text color for dark mode, !important to override conflicts */
+      color: #e2e8f0 !important; /* slate-200 */
+      /* Use a lighter arrow for dark mode */
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    }
+
+    /* Force options to have light text and dark background in dark mode */
+    .dark option {
+        color: #e2e8f0 !important; /* slate-200 */
+        background: #1e293b !important; /* slate-800 */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dnd": "https://aistudiocdn.com/react-dnd@^16.0.1",
+    "react-dnd-html5-backend": "https://aistudiocdn.com/react-dnd-html5-backend@^16.0.1",
+    "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm",
+    "qrcode.react": "https://aistudiocdn.com/qrcode.react@^3.1.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.544.0",
+    "jspdf": "https://aistudiocdn.com/jspdf@^2.5.1",
+    "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1",
+    "@tiptap/react": "https://aistudiocdn.com/@tiptap/react@^3.4.4",
+    "@tiptap/starter-kit": "https://aistudiocdn.com/@tiptap/starter-kit@^3.4.4",
+    "@tiptap/extension-table-row": "https://aistudiocdn.com/@tiptap/extension-table-row@^3.4.4",
+    "@tiptap/extension-table": "https://aistudiocdn.com/@tiptap/extension-table@^3.4.4",
+    "@tiptap/extension-table-header": "https://aistudiocdn.com/@tiptap/extension-table-header@^3.4.4",
+    "@tiptap/extension-table-cell": "https://aistudiocdn.com/@tiptap/extension-table-cell@^3.4.4",
+    "@tiptap/extension-underline": "https://aistudiocdn.com/@tiptap/extension-underline@^3.4.4",
+    "@tiptap/core": "https://aistudiocdn.com/@tiptap/core@^3.4.4",
+    "@tiptap/extension-color": "https://aistudiocdn.com/@tiptap/extension-color@^3.4.4",
+    "@tiptap/extension-text-style": "https://aistudiocdn.com/@tiptap/extension-text-style@^3.4.4",
+    "@google/genai": "https://cdn.jsdelivr.net/npm/@google/genai/+esm"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "name": "CRM Kanban para Clínicas de Estética",
+  "description": "Uma aplicação de CRM no estilo Kanban para gerenciar clientes e agendamentos em clínicas de estética. Permite visualizar o funil de clientes, adicionar novos contatos e agendar procedimentos em um calendário integrado.",
+  "requestFramePermissions": []
+}
