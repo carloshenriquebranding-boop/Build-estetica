@@ -1,8 +1,10 @@
 import * as React from 'react';
 import type { Client, Service, UserProfile, BudgetTemplateData, BudgetItem } from '../types.ts';
-import { Plus, Trash, Save, Download, Loader2, Type, Pencil, ArrowLeft } from './icons/index.ts';
+import { Plus, Trash, Save, Download, Loader2, Type, Pencil } from './icons/index.ts';
 import ColorPicker from './ColorPicker.tsx';
 import LogoUploader from './LogoUploader.tsx';
+import ViewHeader from './ViewHeader.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface BudgetViewProps {
   clients: Client[];
@@ -49,8 +51,6 @@ const BudgetView: React.FC<BudgetViewProps> = ({ clients, services, userProfile,
 
     const selectedClient = clients.find(c => c.id === selectedClientId);
     const total = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-    const inputClasses = "w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
-
 
     const handleAddItem = (item: Omit<BudgetItem, 'id'>) => {
         setItems(prev => [...prev, { ...item, id: `item-${Date.now()}` }]);
@@ -122,7 +122,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({ clients, services, userProfile,
             </div>
              <div>
                 <h3 className="font-semibold mb-2">Fonte</h3>
-                 <select value={templateData.fontFamily} onChange={e => setTemplateData(p => ({...p, fontFamily: e.target.value}))} className={inputClasses}>
+                 <select value={templateData.fontFamily} onChange={e => setTemplateData(p => ({...p, fontFamily: e.target.value}))} className={INPUT_CLASSES}>
                     <option>Poppins, sans-serif</option><option>Arial, sans-serif</option><option>Verdana, sans-serif</option><option>Times New Roman, serif</option><option>Courier New, monospace</option><option>Lato, sans-serif</option><option>Roboto, sans-serif</option><option>Montserrat, sans-serif</option><option>Merriweather, serif</option>
                 </select>
             </div>
@@ -167,7 +167,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({ clients, services, userProfile,
             <div className="p-4 space-y-4 overflow-y-auto">
                 <div>
                     <label className="font-semibold block mb-1">Cliente</label>
-                    <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className={inputClasses}>
+                    <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)} className={INPUT_CLASSES}>
                         <option value="">Selecione um cliente</option>
                         {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -201,12 +201,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({ clients, services, userProfile,
       <div className="flex flex-col md:flex-row h-full gap-6">
         <aside className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 flex flex-col gap-4">
            <div className="flex items-center gap-2 border-b dark:border-slate-700 pb-2">
-                {showBackButton && (
-                    <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                        <ArrowLeft className="w-6 h-6" />
-                    </button>
-                )}
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Orçamento</h1>
+               <ViewHeader title="Orçamento" showBackButton={showBackButton} onBack={onBack}/>
            </div>
             <div className="flex gap-1 p-1 bg-gray-100 dark:bg-slate-700 rounded-lg">
                 <button onClick={() => setViewMode('editor')} className={`w-full py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2 ${viewMode === 'editor' ? 'bg-white dark:bg-slate-500 shadow' : 'text-gray-600 dark:text-slate-300'}`}><Pencil className="w-4 h-4"/> Editor</button>

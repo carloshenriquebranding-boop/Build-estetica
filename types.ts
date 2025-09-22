@@ -125,21 +125,21 @@ export interface BudgetItem {
 
 // Omnichannel types
 export interface WhatsappChat {
-    id: number;
-    user_id: string;
-    jid: string; // phone number
-    name: string;
-    last_message_timestamp: string;
-    lastMessage: string;
-    unreadCount: number;
+    id: string; // uuid
+    user_id: string; // uuid
+    contact_name: string;
+    contact_phone: string;
+    last_message: string | null;
+    last_message_at: string; // timestamptz
+    unread_count: number;
+    created_at: string; // timestamptz
 }
 
 export interface WhatsappMessage {
-    id: number;
-    user_id: string;
-    message_id: string;
-    chat_jid: string;
-    body: string;
-    timestamp: string;
+    id: string; // uuid
+    chat_id: string; // uuid
+    user_id: string; // uuid
+    content: string;
     is_from_me: boolean;
+    created_at: string; // timestamptz
 }

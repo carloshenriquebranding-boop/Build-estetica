@@ -4,7 +4,7 @@ import KanbanColumn from './KanbanColumn.tsx';
 import AddStageColumn from './AddStageColumn.tsx';
 import AddClientModal from './AddClientModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
-import { ArrowLeft } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
 
 interface KanbanBoardProps {
   stages: Stage[];
@@ -122,14 +122,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
    
   return (
     <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-4">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Funil de Clientes</h1>
-        </div>
+        <ViewHeader title="Funil de Clientes" showBackButton={showBackButton} onBack={onBack} />
         
         {/* Mobile Stage Switcher */}
         <div className="md:hidden">

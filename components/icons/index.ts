@@ -1,6 +1,8 @@
 export * from './AlertTriangle.tsx';
+export * from './ArrowDownCircle.tsx';
 export * from './ArrowLeft.tsx';
 export * from './ArrowRight.tsx';
+export * from './ArrowUpCircle.tsx';
 export * from './ArrowUpRightSquare.tsx';
 export * from './BarChart3.tsx';
 export * from './Bell.tsx';
@@ -24,6 +26,7 @@ export * from './Copy.tsx';
 export * from './DollarSign.tsx';
 export * from './Download.tsx';
 export * from './Eraser.tsx';
+export * from './FilePlus.tsx';
 export * from './FileSpreadsheet.tsx';
 export * from './FileText.tsx';
 export * from './Filter.tsx';

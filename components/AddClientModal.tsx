@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { Client, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface AddClientModalProps {
   services: Service[];
@@ -43,7 +44,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                className={INPUT_CLASSES}
                 placeholder="Ex: Maria da Silva"
               />
             </div>
@@ -56,7 +57,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                        className={INPUT_CLASSES}
                         placeholder="(99) 99999-9999"
                     />
                 </div>
@@ -67,7 +68,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
                         id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                        className={INPUT_CLASSES}
                         placeholder="ex: maria@email.com"
                     />
                 </div>
@@ -79,7 +80,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
                 value={treatment}
                 onChange={(e) => setTreatment(e.target.value)}
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                className={INPUT_CLASSES}
               >
                 {services.map(service => (
                   <option key={service.id} value={service.name}>{service.name}</option>
@@ -93,7 +94,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                className={INPUT_CLASSES}
                 placeholder="Detalhes sobre o cliente, como chegou, etc."
               />
             </div>

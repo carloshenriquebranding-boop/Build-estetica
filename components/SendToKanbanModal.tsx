@@ -1,8 +1,8 @@
-
 import * as React from 'react';
 import type { Client, Stage, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface SendToKanbanModalProps {
   isOpen: boolean;
@@ -50,21 +50,21 @@ const SendToKanbanModal: React.FC<SendToKanbanModalProps> = ({
           <div className="p-6 space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome</label>
-              <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+              <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className={INPUT_CLASSES} />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Telefone</label>
-              <input type="tel" id="phone" value={phone} onChange={e => setPhone(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+              <input type="tel" id="phone" value={phone} onChange={e => setPhone(e.target.value)} required className={INPUT_CLASSES} />
             </div>
             <div>
               <label htmlFor="treatment" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Serviço de Interesse</label>
-              <select id="treatment" value={treatment} onChange={e => setTreatment(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500">
+              <select id="treatment" value={treatment} onChange={e => setTreatment(e.target.value)} required className={INPUT_CLASSES}>
                 {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
             </div>
             <div>
               <label htmlFor="stageId" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Enviar para o Estágio</label>
-              <select id="stageId" value={stageId} onChange={e => setStageId(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500">
+              <select id="stageId" value={stageId} onChange={e => setStageId(e.target.value)} required className={INPUT_CLASSES}>
                 {stages.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
               </select>
             </div>

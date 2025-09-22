@@ -35,7 +35,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, onCardCl
       <div className="flex justify-between items-center">
         <p className="font-semibold truncate">{appointment.clientName}</p>
         {appointment.reminder_minutes_before && !appointment.reminder_sent && (
-            // Fix: Wrapped the Bell icon in a span to apply the title attribute, resolving a TypeScript error where 'title' is not a valid prop for the SVG component.
             <span className="flex-shrink-0" title="Lembrete ativado">
                 <Bell className="w-3 h-3" />
             </span>

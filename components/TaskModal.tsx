@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { Task, Client } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -33,8 +34,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, clients,
   };
 
   if (!isOpen) return null;
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -47,20 +46,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, clients,
           <div className="p-6 space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Título da Tarefa</label>
-              <input type="text" id="title" value={title} onChange={e => setTitle(e.target.value)} required className={inputClasses} />
+              <input type="text" id="title" value={title} onChange={e => setTitle(e.target.value)} required className={INPUT_CLASSES} />
             </div>
              <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição (Opcional)</label>
-              <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows={3} className={inputClasses} />
+              <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows={3} className={INPUT_CLASSES} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Data de Vencimento</label>
-                    <input type="date" id="due_date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputClasses} />
+                    <input type="date" id="due_date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={INPUT_CLASSES} />
                 </div>
                 <div>
                     <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Associar ao Cliente</label>
-                    <select id="client_id" value={clientId} onChange={e => setClientId(e.target.value)} className={inputClasses}>
+                    <select id="client_id" value={clientId} onChange={e => setClientId(e.target.value)} className={INPUT_CLASSES}>
                       <option value="">Nenhum</option>
                       {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>

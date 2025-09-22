@@ -3,8 +3,6 @@ import * as React from 'react';
 
 interface TableCreatorProps {
   onSelect: (rows: number, cols: number) => void;
-  // Fix: The `close` prop is injected by the parent `Dropdown` component via `React.cloneElement`.
-  // Making it optional resolves the TypeScript error at the usage site in `TextEditorToolbar`.
   close?: () => void;
 }
 
@@ -17,7 +15,6 @@ const TableCreator: React.FC<TableCreatorProps> = ({ onSelect, close }) => {
 
   const handleSelect = () => {
     onSelect(grid.rows, grid.cols);
-    // Fix: Using optional chaining to safely call `close` since it's an optional prop.
     close?.();
   };
 

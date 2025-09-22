@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
 import { CheckCircle } from './icons/CheckCircle.tsx';
@@ -84,8 +84,8 @@ const WhatsappConnectModal: React.FC<WhatsappConnectModalProps> = ({ isOpen, onC
                     <div className="text-center">
                         <p className="font-semibold text-gray-700 mb-2">Escaneie para conectar</p>
                         <p className="text-sm text-gray-500 mb-4">Abra o WhatsApp no seu celular, vá em <span className="font-semibold">Aparelhos Conectados</span> e escaneie o código.</p>
-                        <div className="flex justify-center p-2 bg-white border rounded-lg relative">
-                           {qrCodeString ? <QRCodeCanvas value={qrCodeString} size={256} /> : <div className="w-64 h-64 bg-gray-200 animate-pulse"></div>}
+                        <div className="flex justify-center bg-white border rounded-lg relative">
+                           {qrCodeString ? <QRCodeSVG value={qrCodeString} size={256} /> : <div className="w-64 h-64 bg-gray-200 animate-pulse"></div>}
                         </div>
                         <div className="flex justify-center gap-2 mt-4">
                             <button onClick={handleGenerateQR} className="flex items-center gap-2 text-xs text-gray-500 hover:text-pink-600 p-2 rounded-lg hover:bg-gray-100 transition-colors">

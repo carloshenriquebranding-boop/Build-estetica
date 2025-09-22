@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { UserProfile } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface EditSubscriptionModalProps {
   user: UserProfile;
@@ -30,8 +31,6 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({ user, onC
     }, 500);
   };
 
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg m-4">
@@ -46,14 +45,14 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({ user, onC
           <div className="p-6 space-y-4">
             <div>
               <label htmlFor="is_active" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Status da Conta</label>
-              <select id="is_active" value={String(isActive)} onChange={e => setIsActive(e.target.value === 'true')} className={inputClasses}>
+              <select id="is_active" value={String(isActive)} onChange={e => setIsActive(e.target.value === 'true')} className={INPUT_CLASSES}>
                 <option value="true">Ativa</option>
                 <option value="false">Inativa</option>
               </select>
             </div>
             <div>
               <label htmlFor="subscription_status" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Status da Assinatura</label>
-              <select id="subscription_status" value={status} onChange={e => setStatus(e.target.value as UserProfile['subscription_status'])} className={inputClasses}>
+              <select id="subscription_status" value={status} onChange={e => setStatus(e.target.value as UserProfile['subscription_status'])} className={INPUT_CLASSES}>
                 <option value="active">Ativo</option>
                 <option value="pending_payment">Pagamento Pendente</option>
                 <option value="expired">Expirado</option>
@@ -62,7 +61,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({ user, onC
             </div>
             <div>
               <label htmlFor="subscription_expires_at" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Data de Expiração</label>
-              <input type="date" id="subscription_expires_at" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className={inputClasses} />
+              <input type="date" id="subscription_expires_at" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className={INPUT_CLASSES} />
             </div>
           </div>
           <div className="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">

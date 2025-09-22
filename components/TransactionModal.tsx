@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { Transaction, Client, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -39,8 +40,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, on
   };
 
   if (!isOpen) return null;
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -61,21 +60,21 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, on
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Valor (R$)</label>
-                    <input type="number" id="amount" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || 0)} required className={inputClasses} />
+                    <input type="number" id="amount" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || 0)} required className={INPUT_CLASSES} />
                 </div>
                 <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Data</label>
-                    <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={inputClasses} />
+                    <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={INPUT_CLASSES} />
                 </div>
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição</label>
-              <input type="text" id="description" value={description} onChange={e => setDescription(e.target.value)} required className={inputClasses} />
+              <input type="text" id="description" value={description} onChange={e => setDescription(e.target.value)} required className={INPUT_CLASSES} />
             </div>
             {type === 'income' && (
                 <div>
                     <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Status do Pagamento</label>
-                    <select id="status" value={status} onChange={e => setStatus(e.target.value as Transaction['status'])} className={inputClasses}>
+                    <select id="status" value={status} onChange={e => setStatus(e.target.value as Transaction['status'])} className={INPUT_CLASSES}>
                       <option value="paid">Pago</option>
                       <option value="pending">Pendente</option>
                       <option value="overdue">Vencido</option>
@@ -85,14 +84,14 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, on
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Cliente (Opcional)</label>
-                <select id="client_id" value={clientId} onChange={e => setClientId(e.target.value)} className={inputClasses}>
+                <select id="client_id" value={clientId} onChange={e => setClientId(e.target.value)} className={INPUT_CLASSES}>
                   <option value="">Nenhum</option>
                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="service_id" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Serviço (Opcional)</label>
-                <select id="service_id" value={serviceId} onChange={e => setServiceId(e.target.value)} className={inputClasses}>
+                <select id="service_id" value={serviceId} onChange={e => setServiceId(e.target.value)} className={INPUT_CLASSES}>
                   <option value="">Nenhum</option>
                   {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>

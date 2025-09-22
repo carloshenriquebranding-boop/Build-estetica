@@ -1,8 +1,9 @@
 import * as React from 'react';
 import type { Client, Stage, Service, Note, ClientTask } from '../types.ts';
 import AddClientModal from './AddClientModal.tsx';
-import { Plus, ChevronsUpDown, Pencil, Phone, Stethoscope, ArrowLeft } from './icons/index.ts';
+import { Plus, ChevronsUpDown, Pencil, Phone, Stethoscope } from './icons/index.ts';
 import { getColorClasses } from '../utils/colors.ts';
+import ViewHeader from './ViewHeader.tsx';
 
 type SortKey = keyof Client | 'stage_title';
 type SortDirection = 'asc' | 'desc';
@@ -80,16 +81,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Clientes</h1>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+      <ViewHeader title="Clientes" showBackButton={showBackButton} onBack={onBack}>
           <input
             type="text"
             placeholder="Pesquisar clientes..."
@@ -101,8 +93,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({
             <Plus className="w-5 h-5" />
             <span className="hidden sm:inline">Adicionar</span>
           </button>
-        </div>
-      </div>
+      </ViewHeader>
 
       {/* Tabela para Desktop */}
       <div className="hidden md:block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg overflow-x-auto">

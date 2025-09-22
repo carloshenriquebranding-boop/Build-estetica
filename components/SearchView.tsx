@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Client, Appointment, Task, Note } from '../types.ts';
-import { X, Search, UserCircle, CalendarDays, CheckSquare, FileText, Moon } from './icons/index.ts';
+import { X, Search, UserCircle, CalendarDays, CheckSquare, FileText } from './icons/index.ts';
 
 type ClientResult = { type: 'client', data: Client };
 type AppointmentResult = { type: 'appointment', data: Appointment };
@@ -133,63 +133,73 @@ const SearchView: React.FC<SearchViewProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-white dark:bg-slate-800 z-50 flex flex-col md:hidden" role="dialog" aria-modal="true">
-            <header className="p-4 border-b dark:border-slate-700 flex items-center gap-2 flex-shrink-0">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Buscar por clientes, tarefas, notas..."
-                        className="w-full bg-gray-100 dark:bg-slate-700 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    />
-                </div>
-                <button onClick={onClose} className="text-sm font-semibold text-pink-600 dark:text-pink-400 px-2 py-1">
-                    Cancelar
-                </button>
-            </header>
-            <main className="flex-grow overflow-y-auto p-4">
-                {searchTerm.length < 2 && (
-                    <div className="text-center pt-20 text-gray-500 dark:text-slate-400">
-                        <Moon className="w-16 h-16 mx-auto opacity-20" />
-                        <p className="mt-4 font-semibold">Busca Rápida</p>
-                        <p className="text-sm">Encontre qualquer coisa no seu CRM.</p>
+        <div 
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-start pt-16 sm:pt-24 p-4" 
+            onClick={onClose}
+            role="dialog" 
+            aria-modal="true"
+        >
+            <div 
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 flex flex-col max-h-[70vh]"
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+            >
+                <header className="p-4 border-b dark:border-slate-700 flex items-center gap-2 flex-shrink-0">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Buscar por clientes, tarefas, notas..."
+                            className="w-full bg-gray-100 dark:bg-slate-700 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        />
                     </div>
-                )}
-                {searchTerm.length >= 2 && results.length === 0 && (
-                     <div className="text-center pt-20 text-gray-500 dark:text-slate-400">
-                        <p className="font-semibold">Nenhum resultado encontrado</p>
-                        <p className="text-sm">Tente usar termos de busca diferentes.</p>
-                    </div>
-                )}
-                {results.length > 0 && (
-                    <div className="space-y-6">
-                        {Object.entries(groupedResults).map(([key, resItems]) => (
-                            <div key={key}>
-                                <h3 className="text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 mb-2">
-                                    {groupConfig[key as SearchResult['type']].title}
-                                </h3>
-                                <ul className="space-y-1">
-                                    {resItems.map(result => {
-                                        const { title, description } = renderResultData(result);
-                                        return (
-                                            <ResultItem
-                                                key={`${result.type}-${result.data.id}`}
-                                                icon={groupConfig[result.type].icon}
-                                                title={title}
-                                                description={description}
-                                                onClick={() => handleResultClick(result)}
-                                            />
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </main>
+                    <button onClick={onClose} className="text-sm font-semibold text-pink-600 dark:text-pink-400 px-2 py-1 md:hidden">
+                        Cancelar
+                    </button>
+                </header>
+                <main className="flex-grow overflow-y-auto p-4">
+                    {searchTerm.length < 2 && (
+                        <div className="text-center pt-10 text-gray-500 dark:text-slate-400">
+                            <Search className="w-16 h-16 mx-auto opacity-20" />
+                            <p className="mt-4 font-semibold">Busca Rápida</p>
+                            <p className="text-sm">Encontre qualquer coisa no seu CRM.</p>
+                        </div>
+                    )}
+                    {searchTerm.length >= 2 && results.length === 0 && (
+                         <div className="text-center pt-10 text-gray-500 dark:text-slate-400">
+                            <p className="font-semibold">Nenhum resultado encontrado</p>
+                            <p className="text-sm">Tente usar termos de busca diferentes.</p>
+                        </div>
+                    )}
+                    {results.length > 0 && (
+                        <div className="space-y-6">
+                            {Object.entries(groupedResults).map(([key, resItems]) => (
+                                <div key={key}>
+                                    <h3 className="text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 mb-2">
+                                        {groupConfig[key as SearchResult['type']].title}
+                                    </h3>
+                                    <ul className="space-y-1">
+                                        {resItems.map(result => {
+                                            const { title, description } = renderResultData(result);
+                                            return (
+                                                <ResultItem
+                                                    key={`${result.type}-${result.data.id}`}
+                                                    icon={groupConfig[result.type].icon}
+                                                    title={title}
+                                                    description={description}
+                                                    onClick={() => handleResultClick(result)}
+                                                />
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </main>
+            </div>
         </div>
     );
 };

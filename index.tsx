@@ -1,6 +1,5 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-// Fix: Added .tsx extension to the App component import to resolve the module loading error. This ensures the bundler correctly identifies the file as a TypeScript React component module.
 import App from './App.tsx';
 
 const rootElement = document.getElementById('root');

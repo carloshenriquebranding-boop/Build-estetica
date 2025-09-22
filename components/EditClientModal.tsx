@@ -7,6 +7,7 @@ import { ClipboardList } from './icons/ClipboardList.tsx';
 import { NotebookText } from './icons/NotebookText.tsx';
 import { Trash } from './icons/Trash.tsx';
 import { Plus } from './icons/Plus.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface EditClientModalProps {
   client: Client;
@@ -99,39 +100,39 @@ const EditClientModal: React.FC<EditClientModalProps> = ({
                 {/* Form fields from AddClientModal, adapted for editing */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Completo</label>
-                  <input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+                  <input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} className={INPUT_CLASSES} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Telefone</label>
-                    <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+                    <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleInputChange} className={INPUT_CLASSES} />
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label>
-                    <input type="email" name="email" id="email" value={formData.email || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+                    <input type="email" name="email" id="email" value={formData.email || ''} onChange={handleInputChange} className={INPUT_CLASSES} />
                   </div>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="treatment" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Serviço/Tratamento</label>
-                        <select name="treatment" id="treatment" value={formData.treatment} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500">
+                        <select name="treatment" id="treatment" value={formData.treatment} onChange={handleInputChange} className={INPUT_CLASSES}>
                             {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="stage_id" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Estágio do Funil</label>
-                        <select name="stage_id" id="stage_id" value={formData.stage_id} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500">
+                        <select name="stage_id" id="stage_id" value={formData.stage_id} onChange={handleInputChange} className={INPUT_CLASSES}>
                             {stages.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
                         </select>
                     </div>
                 </div>
                  <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição</label>
-                    <textarea name="description" id="description" value={formData.description || ''} onChange={handleInputChange} rows={3} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+                    <textarea name="description" id="description" value={formData.description || ''} onChange={handleInputChange} rows={3} className={INPUT_CLASSES} />
                 </div>
                  <div>
                     <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Observações</label>
-                    <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleInputChange} rows={3} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" />
+                    <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleInputChange} rows={3} className={INPUT_CLASSES} />
                 </div>
               </div>
                <div className="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl flex-shrink-0">
@@ -151,7 +152,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
                         placeholder="Adicionar nova tarefa..."
-                        className="flex-grow mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                        className={INPUT_CLASSES}
                     />
                     <button type="submit" className="p-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"><Plus className="w-5 h-5" /></button>
                 </form>

@@ -104,11 +104,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ appointments, onOpenModal, 
                 {getHeaderTitle()}
             </h1>
             <div className="flex items-center gap-1">
-                {viewType !== 'day' && <button onClick={handlePrev} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"><ChevronLeft className="w-5 h-5"/></button>}
-                {viewType === 'month' && (
-                  <button onClick={handleToday} className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700">Hoje</button>
-                )}
-                {viewType !== 'day' && <button onClick={handleNext} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"><ChevronRight className="w-5 h-5"/></button>}
+                <button onClick={handlePrev} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"><ChevronLeft className="w-5 h-5"/></button>
+                <button onClick={handleToday} className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700">Hoje</button>
+                <button onClick={handleNext} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"><ChevronRight className="w-5 h-5"/></button>
             </div>
         </div>
         <div className="flex items-center gap-2">

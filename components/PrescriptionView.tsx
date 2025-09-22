@@ -2,7 +2,6 @@ import * as React from 'react';
 import type { Note, Client, UserProfile, PrescriptionTemplate } from '../types.ts';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Underline } from '@tiptap/extension-underline';
 import { Table } from '@tiptap/extension-table';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -10,8 +9,9 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import TextEditorToolbar from './TextEditorToolbar.tsx';
-// Fix: Removed 'FilePlus' from the icon imports as it is defined locally within the component file and not exported from the main icons index, resolving a module not found error.
-import { Loader2, Save as SaveIcon, Download as DownloadIcon, Type as TypeIcon, Pencil, ArrowLeft } from './icons/index.ts';
+import { Loader2, Save as SaveIcon, Download as DownloadIcon, Type as TypeIcon, Pencil, FilePlus } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 type ViewMode = 'editor' | 'template';
 type PageFormat = 'a4' | 'a5' | 'a6';
@@ -28,13 +28,13 @@ interface PrescriptionViewProps {
   initialTemplate: PrescriptionTemplate | null;
   userProfile: UserProfile | null;
   onTemplateChange: (updatedTemplateData: PrescriptionTemplate['template_data']) => Promise<void>;
-  onSaveNote: (note: Omit<Note, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSaveNote: (note: Omit<Note, 'id'>) => Promise<void>;
   showBackButton?: boolean;
   onBack?: () => void;
 }
 
 const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTemplate, userProfile, onTemplateChange, onSaveNote, showBackButton, onBack }) => {
-  const [template, setTemplate] = React.useState(initialTemplate?.template_data);
+  const [template, setTemplate] = React.useState<PrescriptionTemplate['template_data'] | undefined>(initialTemplate?.template_data);
   const [viewMode, setViewMode] = React.useState<ViewMode>('editor');
   const [format, setFormat] = React.useState<PageFormat>('a4');
   const [isSubmittingTemplate, setIsSubmittingTemplate] = React.useState(false);
@@ -43,10 +43,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
   
   const selectedClient = clients.find(c => c.id === selectedClientId);
   
-  const inputClasses = "w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
-
   const editor = useEditor({
-    extensions: [StarterKit, Underline, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
+    extensions: [StarterKit, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
     content: '<p>Insira a prescrição para o paciente aqui...</p>',
     editable: viewMode === 'editor',
     editorProps: {
@@ -55,6 +53,22 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
       },
     },
   });
+  
+  // Effect to initialize template state if one doesn't exist for the user
+  React.useEffect(() => {
+    if (!initialTemplate?.template_data && userProfile) {
+        setTemplate({
+            business_name: userProfile.business_name || 'Sua Clínica',
+            professional_name: userProfile.name || 'Seu Nome',
+            professional_info: 'Sua Especialidade',
+            address: userProfile.business_address || 'Seu Endereço',
+            contact_info: userProfile.business_phone || 'Seu Contato',
+            font_family: 'Poppins',
+        });
+    } else if (initialTemplate?.template_data) {
+        setTemplate(initialTemplate.template_data);
+    }
+  }, [initialTemplate, userProfile]);
   
   React.useEffect(() => {
     editor?.setEditable(viewMode === 'editor');
@@ -80,13 +94,15 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
     }
     setIsSavingNote(true);
     
-    const newNote: Omit<Note, 'id' | 'created_at' | 'updated_at'> = {
+    const newNote: Omit<Note, 'id'> = {
         title: `Prescrição para ${selectedClient.name} - ${new Date().toLocaleDateString('pt-BR')}`,
         content: JSON.stringify(editor.getJSON()),
         client_id: selectedClientId,
         type: 'prescription',
         tags: ['prescrição'],
         user_id: initialTemplate?.user_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
     };
     await onSaveNote(newNote);
     setIsSavingNote(false);
@@ -165,14 +181,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
 
   return (
     <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-6">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Prescrições</h1>
-        </div>
+        <ViewHeader title="Prescrições" showBackButton={showBackButton} onBack={onBack} />
         <div className="flex flex-col md:flex-row flex-grow gap-6">
             <aside className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 flex flex-col gap-6">
                 <SettingGroup title="Modo de Visualização">
@@ -205,12 +214,12 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
                 ) : (
                     template && <div className="space-y-4 overflow-y-auto flex-grow pr-2">
                         <SettingGroup title="Personalizar Modelo">
-                            <input name="business_name" value={template.business_name} onChange={handleTemplateChange} placeholder="Nome do Negócio" className={inputClasses}/>
-                            <input name="professional_name" value={template.professional_name} onChange={handleTemplateChange} placeholder="Seu Nome" className={inputClasses}/>
-                            <input name="professional_info" value={template.professional_info} onChange={handleTemplateChange} placeholder="Ex: Esteticista, CRBM 12345" className={inputClasses}/>
-                            <input name="address" value={template.address} onChange={handleTemplateChange} placeholder="Endereço" className={inputClasses}/>
-                            <input name="contact_info" value={template.contact_info} onChange={handleTemplateChange} placeholder="Telefone, E-mail, etc." className={inputClasses}/>
-                            <select name="font_family" value={template.font_family} onChange={handleTemplateChange} className={inputClasses}>
+                            <input name="business_name" value={template.business_name} onChange={handleTemplateChange} placeholder="Nome do Negócio" className={INPUT_CLASSES}/>
+                            <input name="professional_name" value={template.professional_name} onChange={handleTemplateChange} placeholder="Seu Nome" className={INPUT_CLASSES}/>
+                            <input name="professional_info" value={template.professional_info} onChange={handleTemplateChange} placeholder="Ex: Esteticista, CRBM 12345" className={INPUT_CLASSES}/>
+                            <input name="address" value={template.address} onChange={handleTemplateChange} placeholder="Endereço" className={INPUT_CLASSES}/>
+                            <input name="contact_info" value={template.contact_info} onChange={handleTemplateChange} placeholder="Telefone, E-mail, etc." className={INPUT_CLASSES}/>
+                            <select name="font_family" value={template.font_family} onChange={handleTemplateChange} className={INPUT_CLASSES}>
                                 <option>Poppins</option><option>Arial</option><option>Verdana</option><option>Times New Roman</option><option>Courier New</option><option>Lato</option><option>Roboto</option><option>Montserrat</option><option>Merriweather</option>
                             </select>
                         </SettingGroup>
@@ -223,26 +232,15 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
                 )}
             </aside>
 
-            <main className="flex-1 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex flex-col overflow-hidden">
-                {viewMode === 'editor' && editor && <TextEditorToolbar editor={editor} />}
-                <div className="a4-sheet-container flex-grow" style={{ fontFamily: template?.font_family }}>
-                    <div className="a4-sheet text-slate-900 dark:text-slate-200">
-                        <div className={`prescription-wrapper format-${format}`}><PrescriptionContent /></div>
-                        {format === 'a6' && (<div className={`prescription-wrapper format-${format} border-l-0`}><PrescriptionContent /></div>)}
-                    </div>
+            <main className="flex-1 bg-gray-50 dark:bg-slate-900 rounded-xl shadow-inner flex flex-col overflow-auto p-4 sm:p-8">
+                <div className="a4-sheet text-slate-900 dark:text-slate-200">
+                    <div className={`prescription-wrapper format-${format}`}><PrescriptionContent /></div>
+                    {format === 'a6' && (<div className={`prescription-wrapper format-${format} border-l-0`}><PrescriptionContent /></div>)}
                 </div>
             </main>
         </div>
     </div>
   );
 };
-// Add a new icon that might be needed
-const FilePlus: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="12" y1="18" x2="12" y2="12"></line>
-    <line x1="9" y1="15" x2="15" y2="15"></line>
-  </svg>
-);
+
 export default PrescriptionView;

@@ -1,9 +1,7 @@
-
 import * as React from 'react';
 import type { Note, Client } from '../types.ts';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Underline } from '@tiptap/extension-underline';
 import { Table } from '@tiptap/extension-table';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -12,7 +10,9 @@ import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import TextEditorToolbar from './TextEditorToolbar.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
-import { Loader2, Plus as PlusIcon, Save as SaveIcon, Trash as TrashIcon, ArrowLeft } from './icons/index.ts';
+import { Loader2, Plus as PlusIcon, Save as SaveIcon, Trash as TrashIcon } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface NotesViewProps {
   notes: Note[];
@@ -33,7 +33,7 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
   const [noteToDelete, setNoteToDelete] = React.useState<Note | null>(null);
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
+    extensions: [StarterKit, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
     content: '',
     editorProps: {
       attributes: {
@@ -91,7 +91,6 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
         title,
         content: contentJSON,
         client_id: clientId,
-        // Fix: Explicitly cast the 'type' property to prevent TypeScript from widening it to a generic string, ensuring it matches the specific 'standard' | 'prescription' union type required by the onSave handler.
         type: 'standard' as Note['type'],
         tags: [],
         created_at: selectedNote?.created_at || new Date().toISOString(),
@@ -122,14 +121,7 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
         {/* Notes List */}
         <aside className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-                {showBackButton && (
-                  <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-                )}
-                <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Notas</h2>
-            </div>
+            <ViewHeader title="Notas" showBackButton={showBackButton} onBack={onBack}/>
             <button onClick={handleNewNote} title="Nova Nota" className="p-2 text-pink-500 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50">
               <PlusIcon className="w-6 h-6" />
             </button>
@@ -139,7 +131,7 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
             placeholder="Pesquisar notas..."
             value={initialSearchTerm}
             onChange={e => onSearchTermChange(e.target.value)}
-            className="w-full px-3 py-2 mb-4 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-pink-500"
+            className={`${INPUT_CLASSES} mb-4`}
           />
           <ul className="overflow-y-auto space-y-2 flex-grow">
             {filteredNotes.map(note => (

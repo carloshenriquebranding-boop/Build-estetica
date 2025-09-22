@@ -4,6 +4,7 @@ import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
 import { Trash } from './icons/Trash.tsx';
 import { NotebookText } from './icons/NotebookText.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -75,8 +76,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   }, [notes, clientId]);
 
   if (!isOpen) return null;
-  
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -98,7 +97,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 value={clientId}
                 onChange={e => setClientId(e.target.value)}
                 required
-                className={inputClasses}
+                className={INPUT_CLASSES}
               >
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -110,7 +109,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 value={treatment}
                 onChange={e => setTreatment(e.target.value)}
                 required
-                className={inputClasses}
+                className={INPUT_CLASSES}
               >
                 {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
@@ -118,11 +117,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Data</label>
-                <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={inputClasses} />
+                <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={INPUT_CLASSES} />
               </div>
               <div>
                 <label htmlFor="time" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Horário</label>
-                <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} required className={inputClasses} />
+                <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} required className={INPUT_CLASSES} />
               </div>
             </div>
             <div>
@@ -132,7 +131,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 rows={3}
                 value={appointmentNotes}
                 onChange={e => setAppointmentNotes(e.target.value)}
-                className={inputClasses}
+                className={INPUT_CLASSES}
               ></textarea>
             </div>
             <div>
@@ -141,7 +140,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 id="reminder"
                 value={reminderMinutes}
                 onChange={e => setReminderMinutes(e.target.value)}
-                className={inputClasses}
+                className={INPUT_CLASSES}
               >
                 <option value="none">Não lembrar</option>
                 <option value="60">1 hora antes</option>

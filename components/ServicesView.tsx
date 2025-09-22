@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { Service } from '../types.ts';
-import { Plus, Loader2, Pencil, Trash, ArrowLeft } from './icons/index.ts';
+import { Plus, Loader2, Pencil, Trash } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface ServicesViewProps {
   services: Service[];
@@ -65,20 +67,12 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Serviços e Tratamentos</h1>
-        </div>
+      <ViewHeader title="Serviços e Tratamentos" showBackButton={showBackButton} onBack={onBack}>
         <button onClick={handleAddNew} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
           <Plus className="w-5 h-5" />
           Adicionar Serviço
         </button>
-      </div>
+      </ViewHeader>
 
       {(isAdding || editingService) && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg mb-6">
@@ -95,7 +89,7 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
                   value={serviceName}
                   onChange={e => setServiceName(e.target.value)}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                  className={INPUT_CLASSES}
                 />
               </div>
               <div>
@@ -107,7 +101,7 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
                   onChange={e => setServicePrice(parseFloat(e.target.value) || 0)}
                   required
                   step="0.01"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                  className={INPUT_CLASSES}
                 />
               </div>
             </div>
@@ -118,7 +112,7 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
                   value={serviceDescription}
                   onChange={e => setServiceDescription(e.target.value)}
                   rows={3}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                  className={INPUT_CLASSES}
                 />
             </div>
             <div className="flex justify-end gap-3">

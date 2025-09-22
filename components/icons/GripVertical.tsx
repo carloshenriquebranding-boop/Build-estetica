@@ -1,4 +1,3 @@
-// Fix: Implemented the GripVertical icon component with SVG content.
 import * as React from 'react';
 
 export const GripVertical: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (

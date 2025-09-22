@@ -1,7 +1,8 @@
 import * as React from 'react';
 import type { Task, Client } from '../types.ts';
 import TaskModal from './TaskModal.tsx';
-import { Plus, Pencil, Trash, ArrowLeft, Clock } from './icons/index.ts';
+import { Plus, Pencil, Trash, Clock } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
 
 interface TasksViewProps {
   tasks: Task[];
@@ -87,32 +88,22 @@ const TasksView: React.FC<TasksViewProps> = ({ tasks, clients, onSave, onToggle,
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
+      <ViewHeader title="Tarefas" showBackButton={showBackButton} onBack={onBack}>
+         <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-slate-700 rounded-lg">
+           {(['pending', 'completed', 'all'] as const).map(f => (
+              <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${filter === f ? 'bg-white dark:bg-slate-500 shadow text-pink-600 dark:text-pink-300' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'}`}>
+                  {{pending: 'Pendentes', completed: 'Concluídas', all: 'Todas'}[f]}
               </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Tarefas</h1>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-           <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-slate-700 rounded-lg">
-             {(['pending', 'completed', 'all'] as const).map(f => (
-                <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${filter === f ? 'bg-white dark:bg-slate-500 shadow text-pink-600 dark:text-pink-300' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'}`}>
-                    {{pending: 'Pendentes', completed: 'Concluídas', all: 'Todas'}[f]}
-                </button>
-             ))}
-           </div>
-          <button onClick={handleOpenModal} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
-            <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Adicionar</span>
-          </button>
-        </div>
-      </div>
+           ))}
+         </div>
+        <button onClick={handleOpenModal} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
+          <Plus className="w-5 h-5" />
+          <span className="hidden sm:inline">Adicionar</span>
+        </button>
+      </ViewHeader>
       
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg">
           <ul className="space-y-3">

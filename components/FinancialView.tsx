@@ -1,8 +1,8 @@
 import * as React from 'react';
 import type { Transaction, Client, Service } from '../types.ts';
 import TransactionModal from './TransactionModal.tsx';
-import { Pencil, Trash, DollarSign, Plus, ArrowLeft, Bell } from './icons/index.ts';
-
+import { Pencil, Trash, DollarSign, Plus, Bell, ArrowUpCircle, ArrowDownCircle } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
 
 const StatCard: React.FC<{ title: string; amount: number; icon: React.ReactNode; color: 'green' | 'red' | 'blue' }> = ({ title, amount, icon, color }) => {
   const colorClasses = {
@@ -125,20 +125,12 @@ const FinancialView: React.FC<FinancialViewProps> = ({ transactions, clients, se
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-            {showBackButton && (
-              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-            )}
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Financeiro</h1>
-        </div>
+      <ViewHeader title="Financeiro" showBackButton={showBackButton} onBack={onBack}>
         <button onClick={handleOpenModal} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
           <Plus className="w-5 h-5" />
           Adicionar Transação
         </button>
-      </div>
+      </ViewHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard title="Receita Total" amount={totalIncome} icon={<ArrowUpCircle className="w-6 h-6" />} color="green" />
@@ -291,13 +283,5 @@ const FinancialView: React.FC<FinancialViewProps> = ({ transactions, clients, se
     </div>
   );
 };
-// Helper icons if they don't exist
-const ArrowUpCircle: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg>
-);
-const ArrowDownCircle: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/></svg>
-);
-
 
 export default FinancialView;

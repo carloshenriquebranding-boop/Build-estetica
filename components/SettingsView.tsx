@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Bell, Webhook, QrCode, Sun, Moon, ArrowLeft } from './icons/index.ts';
+import { Bell, Webhook, QrCode, Sun, Moon } from './icons/index.ts';
 import WhatsappConnectModal from './WhatsappConnectModal.tsx';
+import ViewHeader from './ViewHeader.tsx';
 
 type Theme = 'light' | 'dark';
 
@@ -42,14 +43,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ theme, onThemeChange, showB
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-6">
-        {showBackButton && (
-          <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-        )}
-        <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Configurações</h1>
-      </div>
+      <ViewHeader title="Configurações" showBackButton={showBackButton} onBack={onBack} />
       <div className="space-y-6 max-w-4xl mx-auto">
         <SettingCard
           icon={<Sun className="w-8 h-8" />}

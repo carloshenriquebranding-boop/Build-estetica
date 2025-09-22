@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { UserProfile } from '../types.ts';
-import { Loader2, Save, Camera, ArrowLeft } from './icons/index.ts';
+import { Loader2, Save, Camera } from './icons/index.ts';
+import ViewHeader from './ViewHeader.tsx';
+import { INPUT_CLASSES } from '../constants.ts';
 
 interface ProfileViewProps {
   profile: UserProfile;
@@ -25,19 +27,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({ profile, onProfileUpdate, sho
     setIsSubmitting(false);
     alert('Perfil atualizado com sucesso!');
   };
-  
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500";
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-6">
-        {showBackButton && (
-          <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-        )}
-        <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Meu Perfil</h1>
-      </div>
+      <ViewHeader title="Meu Perfil" showBackButton={showBackButton} onBack={onBack} />
       <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -64,23 +57,23 @@ const ProfileView: React.FC<ProfileViewProps> = ({ profile, onProfileUpdate, sho
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Completo</label>
-              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} className={inputClasses} />
+              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} className={INPUT_CLASSES} />
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label>
-              <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className={inputClasses} />
+              <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className={INPUT_CLASSES} />
             </div>
              <div>
               <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome do Negócio</label>
-              <input type="text" id="business_name" name="business_name" value={formData.business_name} onChange={handleInputChange} className={inputClasses} />
+              <input type="text" id="business_name" name="business_name" value={formData.business_name} onChange={handleInputChange} className={INPUT_CLASSES} />
             </div>
             <div>
               <label htmlFor="business_phone" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Telefone Comercial</label>
-              <input type="tel" id="business_phone" name="business_phone" value={formData.business_phone || ''} onChange={handleInputChange} className={inputClasses} />
+              <input type="tel" id="business_phone" name="business_phone" value={formData.business_phone || ''} onChange={handleInputChange} className={INPUT_CLASSES} />
             </div>
              <div className="md:col-span-2">
               <label htmlFor="business_address" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Endereço Comercial</label>
-              <input type="text" id="business_address" name="business_address" value={formData.business_address || ''} onChange={handleInputChange} className={inputClasses} />
+              <input type="text" id="business_address" name="business_address" value={formData.business_address || ''} onChange={handleInputChange} className={INPUT_CLASSES} />
             </div>
           </div>
 

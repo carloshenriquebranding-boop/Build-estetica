@@ -3,6 +3,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { Stage, Client, ClientTask, Service, Note, Appointment, Transaction, Task, UserProfile, PrescriptionTemplate, BudgetTemplateData } from './types.ts';
 import * as db from './services/databaseService.ts';
+import { supabase } from './services/supabaseClient.ts';
 import { scheduleReminder } from './services/notificationService.ts';
 
 import MenuView from './components/MenuView.tsx';
@@ -33,8 +34,7 @@ import Chatbot from './components/Chatbot.tsx';
 import { Loader2 } from './components/icons/Loader2.tsx';
 import CampaignsView from './components/CampaignsView.tsx';
 
-// Simulate auth state
-type AuthState = 'unauthenticated' | 'selecting_role' | 'in_crm' | 'in_admin' | 'blocked';
+type AuthState = 'unauthenticated' | 'selecting_role' | 'in_crm' | 'in_admin' | 'blocked' | 'loading';
 type Theme = 'light' | 'dark';
 
 const getInitialTheme = (): Theme => {
@@ -49,7 +49,7 @@ const getInitialTheme = (): Theme => {
 
 
 const App: React.FC = () => {
-  const [authState, setAuthState] = React.useState<AuthState>('unauthenticated');
+  const [authState, setAuthState] = React.useState<AuthState>('loading');
   const [activeView, setActiveView] = React.useState('dashboard');
   const [notesSearchTerm, setNotesSearchTerm] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
@@ -95,56 +95,89 @@ const App: React.FC = () => {
       setTheme(newTheme);
   };
 
-
+  // Real-time Authentication Listener
   React.useEffect(() => {
-    // Load all data from the database service on initial mount
-    const loadInitialData = async () => {
-      try {
-        const [
-          stagesData, clientsData, clientTasksData, servicesData, notesData,
-          appointmentsData, transactionsData, tasksData, userProfileData,
-          prescriptionTemplateData
-        ] = await Promise.all([
-          db.getStages(), db.getClients(), db.getClientTasks(), db.getServices(),
-          db.getNotes(), db.getAppointments(), db.getTransactions(), db.getTasks(),
-          db.getUserProfile(), db.getPrescriptionTemplate()
-        ]);
-
-        setStages(stagesData);
-        setClients(clientsData);
-        setClientTasks(clientTasksData);
-        setServices(servicesData);
-        setNotes(notesData);
-        setAppointments(appointmentsData);
-        setTransactions(transactionsData);
-        setTasks(tasksData);
-        setUserProfile(userProfileData);
-        setPrescriptionTemplate(prescriptionTemplateData);
-        setBudgetTemplate(userProfileData?.budget_template || null);
-      } catch (error) {
-        console.error("Failed to load initial data:", error);
-      } finally {
-        setIsLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        try {
+          let profile = await db.getUserProfile(session.user.id);
+          
+          // If profile doesn't exist, this might be a new user. Let's create one.
+          if (!profile) {
+              console.log("No profile found for user, attempting to create one.");
+              // The user object from the session has the metadata we need.
+              profile = await db.createProfileForUser(session.user);
+          }
+          
+          setUserProfile(profile);
+        } catch (error) {
+          // Improved error logging to reveal the underlying cause (e.g., RLS policies)
+          console.error("--- DETAILED PROFILE FETCH/CREATE ERROR ---");
+          console.error("A critical error occurred while fetching or creating the user profile. This is often due to missing Row Level Security (RLS) policies on your 'profiles' table in Supabase.");
+          console.error("Full error object:", error);
+          if (error instanceof Error) {
+            console.error("Error Message:", error.message);
+          }
+          console.error("--- END OF ERROR DETAILS ---");
+          // If creation also fails, logout the user to prevent a loop.
+          setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
       }
-    };
-    
-    loadInitialData();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Simulate login
+  // Data Loading and Auth State Determination
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!userProfile) return;
-      if (userProfile.is_active === false) {
-        setAuthState('blocked');
-      } else if (userProfile.role === 'admin') {
-        setAuthState('selecting_role');
-      } else {
-        setAuthState('in_crm');
-      }
-    }, 1500);
-    return () => clearTimeout(timer);
+    if (userProfile) {
+      setAuthState('loading'); // Show loader while data loads
+      const loadAppData = async () => {
+        try {
+          const [
+            stagesData, clientsData, clientTasksData, servicesData, notesData,
+            appointmentsData, transactionsData, tasksData, prescriptionTemplateData
+          ] = await Promise.all([
+            db.getStages(), db.getClients(), db.getClientTasks(), db.getServices(),
+            db.getNotes(), db.getAppointments(), db.getTransactions(), db.getTasks(),
+            db.getPrescriptionTemplate()
+          ]);
+          setStages(stagesData);
+          setClients(clientsData);
+          setClientTasks(clientTasksData);
+          setServices(servicesData);
+          setNotes(notesData);
+          setAppointments(appointmentsData);
+          setTransactions(transactionsData);
+          setTasks(tasksData);
+          setPrescriptionTemplate(prescriptionTemplateData);
+          setBudgetTemplate(userProfile.budget_template || null);
+          
+          // Determine auth state after all data is loaded
+          if (userProfile.is_active === false) {
+            setAuthState('blocked');
+          } else if (userProfile.role === 'admin') {
+            setAuthState('selecting_role');
+          } else {
+            setAuthState('in_crm');
+          }
+        } catch (error) {
+          console.error("Failed to load app data:", error);
+          // Handle potential data loading errors, maybe log out
+          setAuthState('unauthenticated');
+        } finally {
+            setIsLoading(false);
+        }
+      };
+      loadAppData();
+    } else {
+      setAuthState('unauthenticated');
+      setIsLoading(false);
+    }
   }, [userProfile]);
+
   
   // --- Handlers ---
   const handleRoleSelect = (role: 'crm' | 'admin') => {
@@ -395,13 +428,11 @@ const App: React.FC = () => {
       case 'notes':
         return <NotesView notes={notes} clients={clients} onSave={handleSaveNote} onDelete={handleDeleteNote} initialSearchTerm={notesSearchTerm} onSearchTermChange={setNotesSearchTerm} showBackButton={showBackButton} onBack={handleBack} />;
       case 'omnichannel':
-          // Fix: Destructure stage_id from the client data object to pass it separately to handleAddClient, resolving a type mismatch.
           return <OmnichannelView stages={stages} services={services} onAddClient={({ stage_id, ...data }) => handleAddClient(data, stage_id)} showBackButton={showBackButton} onBack={handleBack} />;
       case 'campaigns':
         return <CampaignsView clients={clients} stages={stages} showBackButton={showBackButton} onBack={handleBack} />;
       case 'prescription':
-          // Fix: Add missing timestamp properties to the note data before saving to align with the expected type.
-          const handleSavePrescriptionNote = async (noteData: Omit<Note, 'id' | 'created_at' | 'updated_at'>) => {
+          const handleSavePrescriptionNote = async (noteData: Omit<Note, 'id'| 'created_at' | 'updated_at'>) => {
              await handleSaveNote({
                 ...noteData,
                 created_at: new Date().toISOString(),
@@ -430,9 +461,12 @@ const App: React.FC = () => {
         return <DashboardView clients={clients} appointments={appointments} transactions={transactions} tasks={tasks} services={services} stages={stages} showBackButton={showBackButton} onBack={handleBack} setActiveView={setActiveView} />;
     }
   };
-
+  
+  if (authState === 'loading') {
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-pink-500" /></div>;
+  }
   if (authState === 'unauthenticated') {
-    return <AuthView />; // In local dev, this will auto-transition
+    return <AuthView />;
   }
   if (authState === 'blocked') {
     return <BlockedAccessView />;
@@ -486,7 +520,7 @@ const App: React.FC = () => {
         notes={notes}
         selectedDate={selectedDateForModal}
         appointment={selectedAppointment}
-        isSaving={false} // UI state can be managed inside the modal now
+        isSaving={false}
         isDeleting={false}
         onNavigateToNotes={handleNavigateToNotes}
       />

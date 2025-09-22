@@ -25,7 +25,6 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
     stage, clients, clientTasks, onDropClient, onOpenAddClientModal, 
     onOpenEditClientModal, onUpdateStage, onDeleteStage, isCollapsed, onToggleCollapse
 }) => {
-  // Fix: Use imperative ref handling for react-dnd to resolve TypeScript type conflict.
   const dropRef = React.useRef<HTMLDivElement>(null);
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'CLIENT_CARD',
