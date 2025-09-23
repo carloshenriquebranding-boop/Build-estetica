@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Note, Client } from '../types.ts';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -8,16 +9,19 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TableRow } from '@tiptap/extension-table-row';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
+// Fix: Import the Underline extension to make it available to the editor.
+import Underline from '@tiptap/extension-underline';
 import TextEditorToolbar from './TextEditorToolbar.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
-import { Loader2, Plus as PlusIcon, Save as SaveIcon, Trash as TrashIcon } from './icons/index.ts';
+import { Loader2, Plus as PlusIcon, Save as SaveIcon, Trash as TrashIcon, CheckCircle } from './icons/index.ts';
 import ViewHeader from './ViewHeader.tsx';
 import { INPUT_CLASSES } from '../constants.ts';
 
 interface NotesViewProps {
   notes: Note[];
   clients: Client[];
-  onSave: (data: Omit<Note, 'id'> & { id?: string }) => Promise<Note>;
+  // Fix: Omitted `user_id` from the save handler type.
+  onSave: (data: Omit<Note, 'id' | 'user_id'> & { id?: string }) => Promise<Note>;
   onDelete: (id: string) => Promise<void>;
   initialSearchTerm: string;
   onSearchTermChange: (term: string) => void;
@@ -25,15 +29,26 @@ interface NotesViewProps {
   onBack?: () => void;
 }
 
+type SaveState = 'idle' | 'saving' | 'success';
+
 const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete, initialSearchTerm, onSearchTermChange, showBackButton, onBack }) => {
   const [selectedNote, setSelectedNote] = React.useState<Note | null>(null);
   const [title, setTitle] = React.useState('');
   const [clientId, setClientId] = React.useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [saveState, setSaveState] = React.useState<SaveState>('idle');
   const [noteToDelete, setNoteToDelete] = React.useState<Note | null>(null);
 
   const editor = useEditor({
-    extensions: [StarterKit, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
+    extensions: [
+      StarterKit, 
+      Underline, 
+      Table.configure({ resizable: true }), 
+      TableRow, 
+      TableHeader, 
+      TableCell, 
+      TextStyle, 
+      Color
+    ],
     content: '',
     editorProps: {
       attributes: {
@@ -82,10 +97,11 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
 
   const handleSaveNote = async () => {
     if (!title.trim() || !editor) return;
-    setIsSubmitting(true);
+    setSaveState('saving');
     
     const contentJSON = JSON.stringify(editor.getJSON());
     
+    // Fix: Removed `user_id` from the payload to match the updated handler signature.
     const noteData = {
         id: selectedNote?.id,
         title,
@@ -97,12 +113,17 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
         updated_at: new Date().toISOString(),
     };
 
-    const savedNote = await onSave(noteData);
-    if (!selectedNote) {
-        setSelectedNote(savedNote);
+    try {
+      const savedNote = await onSave(noteData);
+      if (!selectedNote) {
+          setSelectedNote(savedNote);
+      }
+      setSaveState('success');
+      setTimeout(() => setSaveState('idle'), 2000);
+    } catch(error) {
+      console.error("Failed to save note:", error);
+      setSaveState('idle'); // Reset on error
     }
-    
-    setIsSubmitting(false);
   };
 
   const handleDeleteNote = async () => {
@@ -114,6 +135,18 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
     }
     setNoteToDelete(null);
   };
+  
+  const getSaveButtonContent = () => {
+    switch(saveState) {
+        case 'saving':
+            return <><Loader2 className="w-5 h-5 animate-spin" /> Salvando...</>;
+        case 'success':
+            return <><CheckCircle className="w-5 h-5"/> Salvo!</>;
+        case 'idle':
+        default:
+            return <><SaveIcon className="w-5 h-5" /> Salvar</>;
+    }
+  }
 
   return (
     <>
@@ -121,14 +154,14 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
         {/* Notes List */}
         <aside className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <ViewHeader title="Notas" showBackButton={showBackButton} onBack={onBack}/>
-            <button onClick={handleNewNote} title="Nova Nota" className="p-2 text-pink-500 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50">
+            <ViewHeader title="Anotações" showBackButton={showBackButton} onBack={onBack}/>
+            <button onClick={handleNewNote} title="Nova Anotação" className="p-2 text-pink-500 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50">
               <PlusIcon className="w-6 h-6" />
             </button>
           </div>
           <input
             type="text"
-            placeholder="Pesquisar notas..."
+            placeholder="Pesquisar anotações..."
             value={initialSearchTerm}
             onChange={e => onSearchTermChange(e.target.value)}
             className={`${INPUT_CLASSES} mb-4`}
@@ -148,7 +181,7 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
               </li>
             ))}
              {filteredNotes.length === 0 && (
-                <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-4">Nenhuma nota encontrada.</p>
+                <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-4">Nenhuma anotação encontrada.</p>
              )}
           </ul>
         </aside>
@@ -160,7 +193,7 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
               <div className="p-4 border-b dark:border-slate-700 space-y-3">
                  <input
                   type="text"
-                  placeholder="Título da nota"
+                  placeholder="Título da anotação"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   className="w-full text-2xl font-bold bg-transparent focus:outline-none text-gray-800 dark:text-slate-100"
@@ -186,8 +219,14 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
                     </button>
                   )}
                 </div>
-                <button onClick={handleSaveNote} disabled={isSubmitting || !title.trim()} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 w-28 justify-center disabled:bg-pink-300 disabled:cursor-not-allowed">
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><SaveIcon className="w-5 h-5" /> Salvar</>}
+                <button 
+                  onClick={handleSaveNote} 
+                  disabled={saveState !== 'idle' || !title.trim()} 
+                  className={`flex items-center justify-center gap-2 px-4 py-2 font-semibold rounded-lg shadow-md w-36 transition-colors duration-300
+                    ${saveState === 'success' ? 'bg-green-500 text-white' : 'bg-pink-500 text-white hover:bg-pink-600'}
+                    disabled:bg-opacity-70 disabled:cursor-not-allowed`}
+                >
+                  {getSaveButtonContent()}
                 </button>
               </div>
             </>
@@ -199,9 +238,9 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
                 isOpen={!!noteToDelete}
                 onClose={() => setNoteToDelete(null)}
                 onConfirm={handleDeleteNote}
-                title="Excluir Nota"
+                title="Excluir Anotação"
             >
-                <p>Tem certeza que deseja excluir a nota <span className="font-bold">{noteToDelete.title}</span>? Esta ação não pode ser desfeita.</p>
+                <p>Tem certeza que deseja excluir a anotação <span className="font-bold">{noteToDelete.title}</span>? Esta ação não pode ser desfeita.</p>
             </ConfirmationModal>
         )}
     </>

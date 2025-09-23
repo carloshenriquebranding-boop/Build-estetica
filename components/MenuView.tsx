@@ -1,3 +1,5 @@
+
+
 import * as React from 'react';
 import type { UserProfile } from '../types.ts';
 import { Home, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, CheckSquare, FileText, MessageSquare, Settings, UserCircle, ShieldCheck, FileSpreadsheet, LogOut, MoreHorizontal, Search, HelpCircle, Megaphone } from './icons/index.ts';
@@ -12,7 +14,7 @@ interface MenuViewProps {
 }
 
 const NavItem: React.FC<{
-  icon: React.ReactNode;
+  icon: React.ReactElement<React.SVGProps<SVGSVGElement>>;
   label: string;
   view: string;
   activeView: string;
@@ -21,34 +23,38 @@ const NavItem: React.FC<{
   <li>
     <button
       onClick={() => onClick(view)}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+      className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
         activeView === view
-          ? 'bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300'
-          : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
+          : 'text-slate-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
       }`}
     >
-      {icon}
+      {React.cloneElement(icon, { className: "w-5 h-5 flex-shrink-0" })}
       <span>{label}</span>
     </button>
   </li>
 );
 
 const menuItems = [
-    { view: 'dashboard', label: 'Dashboard', icon: <Home className="w-5 h-5" /> },
-    { view: 'kanban', label: 'Funil', icon: <LayoutGrid className="w-5 h-5" /> },
-    { view: 'clients', label: 'Clientes', icon: <Users className="w-5 h-5" /> },
-    { view: 'calendar', label: 'Agenda', icon: <CalendarDays className="w-5 h-5" /> },
-    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare className="w-5 h-5" /> },
-    { view: 'campaigns', label: 'Campanhas', icon: <Megaphone className="w-5 h-5" /> },
-    { view: 'services', label: 'Serviços', icon: <Briefcase className="w-5 h-5" /> },
-    { view: 'financial', label: 'Financeiro', icon: <DollarSign className="w-5 h-5" /> },
-    { view: 'tasks', label: 'Tarefas', icon: <CheckSquare className="w-5 h-5" /> },
-    { view: 'notes', label: 'Notas', icon: <FileText className="w-5 h-5" /> },
-    { view: 'prescription', label: 'Prescrições', icon: <FileSpreadsheet className="w-5 h-5" /> },
-    { view: 'budget', label: 'Orçamentos', icon: <FileText className="w-5 h-5" /> },
-    { view: 'help', label: 'Ajuda', icon: <HelpCircle className="w-5 h-5" /> },
-    { view: 'search', label: 'Busca', icon: <Search className="w-5 h-5" /> },
+    { view: 'dashboard', label: 'Dashboard', icon: <Home /> },
+    { view: 'kanban', label: 'Funil', icon: <LayoutGrid /> },
+    { view: 'clients', label: 'Clientes', icon: <Users /> },
+    { view: 'calendar', label: 'Agenda', icon: <CalendarDays /> },
+    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare /> },
+    { view: 'services', label: 'Serviços', icon: <Briefcase /> },
+    { view: 'financial', label: 'Financeiro', icon: <DollarSign /> },
+    { view: 'tasks', label: 'Tarefas', icon: <CheckSquare /> },
+    { view: 'notes', label: 'Anotações', icon: <FileText /> },
+    { view: 'prescription', label: 'Prescrições', icon: <FileSpreadsheet /> },
+    { view: 'budget', label: 'Orçamentos', icon: <FileText /> },
+    { view: 'campaigns', label: 'Campanhas', icon: <Megaphone /> },
 ];
+
+const utilityItems = [
+    { view: 'search', label: 'Busca Rápida', icon: <Search /> },
+    { view: 'help', label: 'Ajuda & Suporte', icon: <HelpCircle /> },
+];
+
 
 const MenuView: React.FC<MenuViewProps> = ({ activeView, setActiveView, isAdmin, userProfile, onOpenSearch, onOpenHelp }) => {
     const [isUserMenuOpen, setUserMenuOpen] = React.useState(false);
@@ -90,32 +96,38 @@ const MenuView: React.FC<MenuViewProps> = ({ activeView, setActiveView, isAdmin,
     }
 
     return (
-        <aside className="w-64 bg-white dark:bg-slate-800 flex-col p-4 border-r border-gray-200 dark:border-slate-700 hidden md:flex">
-            <div className="text-2xl font-bold text-pink-500 mb-8 px-2">EstéticaCRM</div>
-            <nav className="flex-grow overflow-y-auto pr-2">
+        <aside className="w-64 bg-white dark:bg-slate-900 flex-col p-4 border-r border-stone-200 dark:border-slate-800 hidden md:flex">
+            <div className="text-2xl font-bold font-display tracking-tight text-pink-500 mb-8 px-2">EstéticaCRM</div>
+            <nav className="flex-grow flex flex-col overflow-y-auto pr-2 -mr-2">
                 <ul className="space-y-1.5">
                     {menuItems.map(item => (
                         <NavItem key={item.view} {...item} activeView={activeView} onClick={handleItemClick} />
                     ))}
                 </ul>
+                <div className="my-4 h-px bg-stone-200 dark:bg-slate-700/50"></div>
+                <ul className="space-y-1.5">
+                     {utilityItems.map(item => (
+                        <NavItem key={item.view} {...item} activeView={activeView} onClick={handleItemClick} />
+                    ))}
+                </ul>
             </nav>
             {/* User Profile Section */}
-            <div className="relative mt-auto border-t dark:border-slate-700 pt-4" ref={userMenuRef}>
+            <div className="relative mt-auto pt-4 border-t border-stone-200 dark:border-slate-800" ref={userMenuRef}>
                 {isUserMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-2 w-56 bg-white dark:bg-slate-700 rounded-lg shadow-xl z-20 border border-gray-200 dark:border-slate-600">
+                    <div className="absolute bottom-full right-0 mb-2 w-56 bg-white dark:bg-slate-700 rounded-lg shadow-xl z-20 border border-stone-200 dark:border-slate-600">
                         <ul className="py-1">
                             {userMenuItems.map(item => (
                                 <li key={item.view}>
                                     <button 
                                         onClick={() => handleNavigate(item.view)}
-                                        className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-600"
+                                        className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-600"
                                     >
                                         {item.icon}
                                         <span>{item.label}</span>
                                     </button>
                                 </li>
                             ))}
-                            <div className="my-1 h-px bg-gray-200 dark:bg-slate-600"></div>
+                            <div className="my-1 h-px bg-stone-200 dark:bg-slate-600"></div>
                             <li>
                                 <button
                                     onClick={handleLogout}
@@ -131,16 +143,16 @@ const MenuView: React.FC<MenuViewProps> = ({ activeView, setActiveView, isAdmin,
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <img 
-                            src={userProfile.avatar_url || `https://ui-avatars.com/api/?name=${userProfile.name.split(' ').join('+')}&background=random`}
+                            src={userProfile.avatar_url || `https://ui-avatars.com/api/?name=${userProfile.name.split(' ').join('+')}&background=ec4899&color=fff&font-size=0.33`}
                             alt="User avatar"
                             className="w-10 h-10 rounded-full object-cover"
                         />
                         <div className="text-left overflow-hidden">
-                            <p className="font-semibold text-sm text-gray-800 dark:text-slate-100 truncate">{userProfile.name}</p>
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{userProfile.business_name}</p>
+                            <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">{userProfile.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userProfile.business_name}</p>
                         </div>
                     </div>
-                    <button onClick={() => setUserMenuOpen(o => !o)} className="p-2 -mr-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+                    <button onClick={() => setUserMenuOpen(o => !o)} className="p-2 -mr-2 text-slate-500 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-full">
                         <MoreHorizontal className="w-5 h-5" />
                     </button>
                 </div>

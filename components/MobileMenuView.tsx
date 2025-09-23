@@ -1,3 +1,5 @@
+
+
 import * as React from 'react';
 import { Home, LayoutGrid, Users, CalendarDays, MessageSquare, MoreHorizontal, CheckSquare, Briefcase, DollarSign, FileText, Settings, UserCircle, ShieldCheck, FileSpreadsheet, Search, HelpCircle, Megaphone } from './icons/index.ts';
 
@@ -19,12 +21,12 @@ const mainItems = [
 const allMenuItems = [
     { view: 'clients', label: 'Clientes', icon: <Users className="w-5 h-5" /> },
     { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare className="w-5 h-5" /> },
-    { view: 'campaigns', label: 'Campanhas', icon: <Megaphone className="w-5 h-5" /> },
     { view: 'services', label: 'Serviços', icon: <Briefcase className="w-5 h-5" /> },
     { view: 'financial', label: 'Financeiro', icon: <DollarSign className="w-5 h-5" /> },
-    { view: 'notes', label: 'Notas', icon: <FileText className="w-5 h-5" /> },
+    { view: 'notes', label: 'Anotações', icon: <FileText className="w-5 h-5" /> },
     { view: 'prescription', label: 'Prescrições', icon: <FileSpreadsheet className="w-5 h-5" /> },
     { view: 'budget', label: 'Orçamentos', icon: <FileText className="w-5 h-5" /> },
+    { view: 'campaigns', label: 'Campanhas', icon: <Megaphone className="w-5 h-5" /> },
     { view: 'help', label: 'Ajuda', icon: <HelpCircle className="w-5 h-5" /> },
     { view: 'search', label: 'Busca', icon: <Search className="w-5 h-5" /> },
     { view: 'profile', label: 'Meu Perfil', icon: <UserCircle className="w-5 h-5" /> },

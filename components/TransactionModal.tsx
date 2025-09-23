@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Transaction, Client, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
@@ -7,7 +8,8 @@ import { INPUT_CLASSES } from '../constants.ts';
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (transactionData: Omit<Transaction, 'id'> & { id?: string }) => void;
+  // Fix: Omitted `user_id` and `created_at` from the type to match the handler.
+  onSave: (transactionData: Omit<Transaction, 'id' | 'user_id' | 'created_at'> & { id?: string }) => void;
   clients: Client[];
   services: Service[];
   transaction: Transaction | null;
@@ -31,6 +33,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, on
       type,
       amount,
       description,
+      // Fix: The submitted object now correctly matches the updated `onSave` prop type.
       date: new Date(date),
       client_id: clientId || null,
       service_id: serviceId || null,

@@ -78,8 +78,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg m-4">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+      <div className="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
         <div className="p-6 border-b dark:border-slate-700 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
             {appointment ? 'Editar Agendamento' : 'Novo Agendamento'}
@@ -151,7 +151,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </div>
             {clientNotes.length > 0 && (
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/30 rounded-lg">
-                    <h4 className="font-semibold text-sm text-yellow-800 dark:text-yellow-300 mb-2 flex items-center gap-2"><NotebookText className="w-4 h-4"/> Notas do Cliente</h4>
+                    <h4 className="font-semibold text-sm text-yellow-800 dark:text-yellow-300 mb-2 flex items-center gap-2"><NotebookText className="w-4 h-4"/> Anotações do Cliente</h4>
                     <ul className="space-y-1 text-xs list-disc list-inside">
                         {clientNotes.map(note => (
                             <li key={note.id} className="text-gray-700 dark:text-slate-300">

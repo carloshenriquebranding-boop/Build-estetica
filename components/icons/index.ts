@@ -67,6 +67,7 @@ export * from './ShieldCheck.tsx';
 export * from './Stethoscope.tsx';
 export * from './Sun.tsx';
 export * from './Table.tsx';
+export * from './TextColor.tsx';
 export * from './Trash.tsx';
 export * from './TrendingUp.tsx';
 export * from './Type.tsx';

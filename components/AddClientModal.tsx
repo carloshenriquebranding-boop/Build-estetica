@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Client, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
@@ -7,7 +8,8 @@ import { INPUT_CLASSES } from '../constants.ts';
 interface AddClientModalProps {
   services: Service[];
   onClose: () => void;
-  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id'>) => void;
+  // Fix: Omitted `created_at` from the type as it's handled by the database.
+  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => void;
   isSubmitting: boolean;
 }
 
@@ -21,13 +23,14 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && phone.trim() && treatment.trim()) {
+      // Fix: Removed `created_at` from the object literal to match the updated prop type.
       onAddClient({ name, phone, email, treatment, description });
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg m-4 transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+      <div className="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg">
         <div className="p-6 border-b dark:border-slate-700 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Adicionar Novo Cliente</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
@@ -100,13 +103,13 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
             </div>
           </div>
           <div className="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 flex items-center justify-center w-32 disabled:bg-pink-300 dark:disabled:bg-pink-800"
+              className="px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 flex items-center justify-center w-32 disabled:bg-pink-300 dark:disabled:bg-pink-800 transition-colors"
             >
               {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Adicionar'}
             </button>

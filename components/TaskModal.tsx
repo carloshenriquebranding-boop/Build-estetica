@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Task, Client } from '../types.ts';
 import { X } from './icons/X.tsx';
@@ -7,7 +8,8 @@ import { INPUT_CLASSES } from '../constants.ts';
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (taskData: Omit<Task, 'id' | 'completed'> & { id?: string }) => void;
+  // Fix: Updated `onSave` parameter type to omit database-generated fields.
+  onSave: (taskData: Omit<Task, 'id' | 'completed' | 'user_id' | 'created_at'> & { id?: string }) => void;
   clients: Client[];
   task: Task | null;
 }
@@ -23,6 +25,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, clients,
     e.preventDefault();
     if (!title.trim()) return;
     setIsSubmitting(true);
+    // Fix: The submitted object now correctly matches the updated `onSave` prop type.
     await onSave({
       id: task?.id,
       title,

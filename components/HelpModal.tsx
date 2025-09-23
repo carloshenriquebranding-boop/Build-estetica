@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { X } from './icons/X.tsx';
-import { Home, LayoutGrid, Users, CalendarDays, MessageSquare, DollarSign } from './icons/index.ts';
+import { Home, LayoutGrid, Users, CalendarDays, MessageSquare, DollarSign, FileText } from './icons/index.ts';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -22,8 +22,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+      <div className="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         <div className="p-6 border-b dark:border-slate-700 flex justify-between items-center flex-shrink-0">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Como Usar o CRM</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
@@ -48,6 +48,9 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             </HelpSection>
             <HelpSection icon={<DollarSign className="w-6 h-6" />} title="Financeiro">
                 Controle suas finanças. Registre receitas e despesas para manter o saldo da sua clínica sempre atualizado.
+            </HelpSection>
+            <HelpSection icon={<FileText className="w-6 h-6" />} title="Anotações">
+                Crie anotações gerais ou vinculadas a um cliente. Use o editor de texto para formatar informações importantes, criar listas e tabelas.
             </HelpSection>
         </div>
          <div className="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl flex-shrink-0">

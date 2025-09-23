@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Note, Client, UserProfile, PrescriptionTemplate } from '../types.ts';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -8,6 +9,8 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TableRow } from '@tiptap/extension-table-row';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
+// Fix: Import the Underline extension to make it available to the editor.
+import Underline from '@tiptap/extension-underline';
 import TextEditorToolbar from './TextEditorToolbar.tsx';
 import { Loader2, Save as SaveIcon, Download as DownloadIcon, Type as TypeIcon, Pencil, FilePlus } from './icons/index.ts';
 import ViewHeader from './ViewHeader.tsx';
@@ -28,7 +31,7 @@ interface PrescriptionViewProps {
   initialTemplate: PrescriptionTemplate | null;
   userProfile: UserProfile | null;
   onTemplateChange: (updatedTemplateData: PrescriptionTemplate['template_data']) => Promise<void>;
-  onSaveNote: (note: Omit<Note, 'id'>) => Promise<void>;
+  onSaveNote: (note: Omit<Note, 'id' | 'user_id'>) => Promise<void>;
   showBackButton?: boolean;
   onBack?: () => void;
 }
@@ -44,7 +47,16 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
   const selectedClient = clients.find(c => c.id === selectedClientId);
   
   const editor = useEditor({
-    extensions: [StarterKit, Table.configure({ resizable: true }), TableRow, TableHeader, TableCell, TextStyle, Color],
+    extensions: [
+      StarterKit, 
+      Underline, 
+      Table.configure({ resizable: true }), 
+      TableRow, 
+      TableHeader, 
+      TableCell, 
+      TextStyle, 
+      Color
+    ],
     content: '<p>Insira a prescrição para o paciente aqui...</p>',
     editable: viewMode === 'editor',
     editorProps: {
@@ -94,13 +106,12 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
     }
     setIsSavingNote(true);
     
-    const newNote: Omit<Note, 'id'> = {
+    const newNote: Omit<Note, 'id' | 'user_id'> = {
         title: `Prescrição para ${selectedClient.name} - ${new Date().toLocaleDateString('pt-BR')}`,
         content: JSON.stringify(editor.getJSON()),
         client_id: selectedClientId,
         type: 'prescription',
         tags: ['prescrição'],
-        user_id: initialTemplate?.user_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
     };
@@ -174,6 +185,40 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
       </footer>
     </>
   );
+  
+  const renderSheetContent = () => {
+    const wrapperBaseClass = "prescription-wrapper";
+    switch (format) {
+      case 'a5':
+        return (
+          <>
+            <div className={`${wrapperBaseClass} format-a5`}>
+              <PrescriptionContent />
+            </div>
+            <div className={`${wrapperBaseClass} format-a5`}>
+              <PrescriptionContent />
+            </div>
+          </>
+        );
+      case 'a6':
+        return (
+          <>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={`${wrapperBaseClass} format-a6`}>
+                <PrescriptionContent />
+              </div>
+            ))}
+          </>
+        );
+      case 'a4':
+      default:
+        return (
+          <div className={`${wrapperBaseClass} format-a4`}>
+            <PrescriptionContent />
+          </div>
+        );
+    }
+  };
 
   if (!template || !userProfile) {
     return <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin"/></div>
@@ -202,6 +247,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
                         {formats.map(f => <button key={f.id} onClick={() => setFormat(f.id)} className={`w-full py-1.5 rounded-md text-sm font-semibold ${format === f.id ? 'bg-white dark:bg-slate-500 shadow' : 'text-gray-600 dark:text-slate-300'}`}>{f.label}</button>)}
                         </div>
                     </SettingGroup>
+                    {editor && <TextEditorToolbar editor={editor} />}
                     <div className="space-y-3 mt-auto pt-4">
                         <button onClick={handleSaveAsNote} disabled={isSavingNote || !selectedClientId} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 disabled:bg-green-300 disabled:cursor-not-allowed">
                             {isSavingNote ? <Loader2 className="w-5 h-5 animate-spin"/> : <><FilePlus className="w-5 h-5"/> Salvar como Anotação</>}
@@ -234,8 +280,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({ clients, initialTem
 
             <main className="flex-1 bg-gray-50 dark:bg-slate-900 rounded-xl shadow-inner flex flex-col overflow-auto p-4 sm:p-8">
                 <div className="a4-sheet text-slate-900 dark:text-slate-200">
-                    <div className={`prescription-wrapper format-${format}`}><PrescriptionContent /></div>
-                    {format === 'a6' && (<div className={`prescription-wrapper format-${format} border-l-0`}><PrescriptionContent /></div>)}
+                    {renderSheetContent()}
                 </div>
             </main>
         </div>

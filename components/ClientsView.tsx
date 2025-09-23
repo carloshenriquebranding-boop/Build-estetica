@@ -1,8 +1,9 @@
+
 import * as React from 'react';
 import type { Client, Stage, Service, Note, ClientTask } from '../types.ts';
 import AddClientModal from './AddClientModal.tsx';
 import { Plus, ChevronsUpDown, Pencil, Phone, Stethoscope } from './icons/index.ts';
-import { getColorClasses } from '../utils/colors.ts';
+import { getClientColor } from '../utils/colors.ts';
 import ViewHeader from './ViewHeader.tsx';
 
 type SortKey = keyof Client | 'stage_title';
@@ -12,7 +13,8 @@ interface ClientsViewProps {
   clients: Client[];
   stages: Stage[];
   services: Service[];
-  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id'>) => Promise<void>;
+  // Fix: Changed return type and clientData type to match the handler in App.tsx.
+  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => Promise<Client | undefined>;
   onOpenEditClientModal: (client: Client) => void;
   showBackButton?: boolean;
   onBack?: () => void;
@@ -33,7 +35,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.treatment.toLowerCase().includes(searchTerm.toLowerCase())
+      client.treatment?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [clients, searchTerm]);
   
@@ -72,7 +74,7 @@ const ClientsView: React.FC<ClientsViewProps> = ({
     setSortConfig({ key, direction });
   };
 
-  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id'>) => {
+  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => {
     setIsSubmitting(true);
     await onAddClient(clientData);
     setIsSubmitting(false);
@@ -137,10 +139,9 @@ const ClientsView: React.FC<ClientsViewProps> = ({
       {/* Lista de Cards para Mobile */}
       <div className="md:hidden space-y-3">
         {sortedClients.map(client => {
-            const stageInfo = stagesById.get(client.stage_id);
-            const colorClasses = getColorClasses(stageInfo?.color);
+            const color = getClientColor(client.id);
             return (
-                <div key={client.id} className={`bg-white dark:bg-slate-800 rounded-lg shadow-md border-l-4 ${colorClasses.border} flex items-center p-4`}>
+                <div key={client.id} className={`bg-white dark:bg-slate-800 rounded-lg shadow-md border-l-4 ${color.border500} flex items-center p-4`}>
                     <div className="flex-grow">
                         <h3 className="font-bold text-gray-800 dark:text-slate-100 text-lg">{client.name}</h3>
                         <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-slate-400">
@@ -151,10 +152,6 @@ const ClientsView: React.FC<ClientsViewProps> = ({
                             <div className="flex items-center gap-2">
                                 <Stethoscope className="w-4 h-4 text-gray-400" />
                                 <span>{client.treatment}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${colorClasses.bg.replace('-200', '-500')}`}></div>
-                                <span>{stageInfo?.title || 'N/A'}</span>
                             </div>
                         </div>
                     </div>

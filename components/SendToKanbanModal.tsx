@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Client, Stage, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
@@ -7,7 +8,8 @@ import { INPUT_CLASSES } from '../constants.ts';
 interface SendToKanbanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddClient: (clientData: Omit<Client, 'id' | 'user_id'>) => void;
+  // Fix: Changed return type and clientData type to match the handler it receives.
+  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'created_at'>) => Promise<Client | undefined>;
   stages: Stage[];
   services: Service[];
   initialData: { name: string; phone: string };
@@ -25,10 +27,10 @@ const SendToKanbanModal: React.FC<SendToKanbanModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate async
     
     try {
-      onAddClient({ name, phone, treatment, stage_id: stageId });
+      // Fix: Added await and removed `created_at` from payload to align with updated handler.
+      await onAddClient({ name, phone, treatment, stage_id: stageId });
       onClose();
     } catch(error) {
       console.error("Error adding client from Omnichannel modal", error);

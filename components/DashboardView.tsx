@@ -16,7 +16,7 @@ import {
   TrendingUp,
   AlertTriangle,
 } from './icons/index.ts';
-import { getColorClasses } from '../utils/colors.ts';
+import { getClientColor } from '../utils/colors.ts';
 
 interface DashboardViewProps {
   clients: Client[];
@@ -31,23 +31,28 @@ interface DashboardViewProps {
 }
 
 const StatCard: React.FC<{
-  icon: React.ReactNode;
+  icon: React.ReactElement<React.SVGProps<SVGSVGElement>>;
   title: string;
   value: string | number;
   description: string;
-  colorClass: string;
-}> = ({ icon, title, value, description, colorClass }) => (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg flex items-start gap-4">
-        <div className={`p-3 rounded-full ${colorClass}`}>
-            {icon}
+  gradientClass: string;
+}> = ({ icon, title, value, description, gradientClass }) => (
+    <div className={`relative bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border dark:border-slate-800`}>
+        <div className={`absolute -top-4 -right-4 text-white/10 dark:text-white/5`}>
+            {React.cloneElement(icon, { className: "w-28 h-28" })}
         </div>
-        <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{title}</p>
-            <p className="text-3xl font-bold text-gray-800 dark:text-slate-100">{value}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{description}</p>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-tr from-transparent via-white/10 to-transparent dark:via-white/5"></div>
+        <div className="relative z-10">
+             <div className={`p-3 w-fit rounded-xl mb-4 text-white ${gradientClass}`}>
+                {React.cloneElement(icon, { className: "w-7 h-7" })}
+            </div>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-4xl font-bold text-slate-800 dark:text-slate-100 mt-1">{value}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">{description}</p>
         </div>
     </div>
 );
+
 
 const ActivityIcon: React.FC<{type: string}> = ({ type }) => {
     const iconMap: Record<string, { icon: React.ReactNode, color: string }> = {
@@ -69,7 +74,7 @@ const AgentAvatar: React.FC<{ name: string, color: string }> = ({ name, color })
 );
 
 const Suggestion: React.FC<{ children: React.ReactNode, actionText?: string, onAction?: () => void }> = ({ children, actionText, onAction }) => (
-    <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+    <div className="flex items-start gap-3 p-3 bg-stone-50 dark:bg-slate-700/50 rounded-lg">
         <div className="w-2 h-2 rounded-full bg-pink-500 mt-2 flex-shrink-0"></div>
         <div className="flex-grow">
             <div className="text-sm text-slate-700 dark:text-slate-300">{children}</div>
@@ -89,11 +94,11 @@ const AgentCard: React.FC<{
     summary: string;
     children: React.ReactNode;
 }> = ({ name, title, avatarColor, summary, children }) => (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg flex flex-col">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg flex flex-col border dark:border-slate-800">
         <div className="flex items-center gap-4 mb-4">
             <AgentAvatar name={name} color={avatarColor} />
             <div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{name}</h3>
+                <h3 className="text-xl font-bold font-display text-slate-800 dark:text-slate-100">{name}</h3>
                 <p className="text-sm font-medium text-pink-500 dark:text-pink-400">{title}</p>
             </div>
         </div>
@@ -175,7 +180,7 @@ const AIAgentsSection: React.FC<{
         <div className="mt-8">
             <div className="flex items-center gap-3 mb-6">
                <Wand2 className="w-8 h-8 text-pink-500"/>
-               <h2 className="text-3xl font-bold text-gray-700 dark:text-slate-200">Central de Inteligência</h2>
+               <h2 className="text-3xl font-bold font-display tracking-tight text-slate-700 dark:text-slate-200">Central de Inteligência</h2>
             </div>
             <p className="mb-8 text-slate-600 dark:text-slate-400 max-w-3xl">
                 Nossos agentes de IA analisaram seus dados e prepararam sugestões para otimizar sua clínica.
@@ -184,7 +189,7 @@ const AIAgentsSection: React.FC<{
                 <AgentCard 
                     name="Carlos" 
                     title="Consultor Financeiro" 
-                    avatarColor="bg-green-500"
+                    avatarColor="bg-gradient-to-br from-green-500 to-emerald-500"
                     summary={`Com uma receita de ${revenueThisMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} este mês, identifiquei oportunidades para aumentar seu faturamento.`}
                 >
                     <Suggestion actionText="Ver Serviços" onAction={() => setActiveView('services')}>
@@ -198,7 +203,7 @@ const AIAgentsSection: React.FC<{
                  <AgentCard 
                     name="Sofia" 
                     title="Assistente de Agendamento" 
-                    avatarColor="bg-pink-500"
+                    avatarColor="bg-gradient-to-br from-pink-500 to-rose-500"
                     summary="Analisei sua agenda para os próximos dias e notei alguns horários vagos que podemos preencher para maximizar sua ocupação."
                 >
                     <Suggestion actionText="Ver Agenda" onAction={() => setActiveView('calendar')}>
@@ -212,7 +217,7 @@ const AIAgentsSection: React.FC<{
                  <AgentCard 
                     name="Rita" 
                     title="Gestora Operacional" 
-                    avatarColor="bg-blue-500"
+                    avatarColor="bg-gradient-to-br from-blue-500 to-indigo-500"
                     summary={`Gerenciando suas tarefas e estoque, notei ${pendingTasks.length} tarefas pendentes. Manter a operação em dia é crucial.`}
                 >
                     <Suggestion actionText="Ver Tarefas" onAction={() => setActiveView('tasks')}>
@@ -279,25 +284,25 @@ const ClinicOverviewInfographic: React.FC<{
   const maxWeeklyRevenue = Math.max(...weeklyRevenue.map(d => d.revenue), 1); // Avoid division by zero
 
   return (
-    <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-6">Visão Geral da Clínica</h2>
+    <div className="mt-8 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border dark:border-slate-800">
+        <h2 className="text-2xl font-bold font-display tracking-tight text-slate-800 dark:text-slate-100 mb-6">Visão Geral da Clínica</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Funnel */}
             <div className="space-y-4">
-                <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-slate-300">
+                <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
                     <Filter className="w-5 h-5 text-pink-500" />
                     <h3>Funil de Vendas</h3>
                 </div>
                 <div className="space-y-2">
                   {funnelData.map((stage, index) => {
-                    const colorClasses = getColorClasses(stage.color);
+                    const color = getClientColor(stage.id); // Using the same hash logic for consistent stage colors
                     const widthPercentage = funnelData[0].count > 0 ? (stage.count / funnelData[0].count) * 100 : 0;
                     return (
                         <div key={stage.id} className="flex items-center gap-3 text-sm">
-                            <span className="w-24 sm:w-28 truncate text-right text-gray-500 dark:text-slate-400 flex-shrink-0">{stage.title}</span>
-                            <div className={`flex-grow h-8 rounded ${colorClasses.bg} dark:bg-opacity-40 flex items-center justify-between px-3`} style={{ width: `${widthPercentage}%`, minWidth: '40px' }}>
-                                <span className={`font-bold ${colorClasses.text}`}>{stage.count}</span>
+                            <span className="w-24 sm:w-28 truncate text-right text-slate-500 dark:text-slate-400 flex-shrink-0">{stage.title}</span>
+                            <div className={`flex-grow h-8 rounded ${color.bg100} dark:bg-opacity-40 flex items-center justify-between px-3`} style={{ width: `${widthPercentage}%`, minWidth: '40px' }}>
+                                <span className={`font-bold ${color.text800} dark:text-slate-200`}>{stage.count}</span>
                             </div>
                         </div>
                     )
@@ -308,19 +313,19 @@ const ClinicOverviewInfographic: React.FC<{
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {/* Top Services */}
               <div className="space-y-3">
-                  <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
                       <BarChart3 className="w-5 h-5 text-pink-500" />
                       <h3>Serviços Populares</h3>
                   </div>
                    <div className="space-y-3 text-xs sm:text-sm">
                         {topServices.map(([name, count]) => (
                             <div key={name}>
-                                <div className="flex justify-between font-medium text-gray-600 dark:text-slate-300">
+                                <div className="flex justify-between font-medium text-slate-600 dark:text-slate-300">
                                     <span className="truncate pr-2">{name}</span>
                                     <span>{count}</span>
                                 </div>
-                                <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-1">
-                                    <div className="bg-pink-500 h-2 rounded-full" style={{ width: `${(count / maxServiceCount) * 100}%`}}></div>
+                                <div className="w-full bg-stone-200 dark:bg-slate-700 rounded-full h-2 mt-1">
+                                    <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-2 rounded-full" style={{ width: `${(count / maxServiceCount) * 100}%`}}></div>
                                 </div>
                             </div>
                         ))}
@@ -329,21 +334,21 @@ const ClinicOverviewInfographic: React.FC<{
 
               {/* Revenue Trend */}
               <div className="space-y-3 overflow-hidden">
-                  <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
                       <TrendingUp className="w-5 h-5 text-pink-500" />
                       <h3>Faturamento (7d)</h3>
                   </div>
-                  <div className="flex justify-between items-end h-32 gap-1 sm:gap-2 border-b-2 border-gray-200 dark:border-slate-700 pb-2">
+                  <div className="flex justify-between items-end h-32 gap-1 sm:gap-2 border-b-2 border-stone-200 dark:border-slate-700 pb-2">
                     {weeklyRevenue.map(day => (
                         <div key={day.date} className="w-full flex flex-col items-center justify-end h-full gap-1 group">
-                           <div className="text-[10px] sm:text-xs font-bold text-gray-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                {day.revenue.toLocaleString('pt-BR', {style:'currency', currency: 'BRL'})}
                            </div>
                            <div 
-                               className="w-full bg-pink-300 dark:bg-pink-700 rounded-t-sm hover:bg-pink-500 transition-all"
+                               className="w-full bg-gradient-to-t from-pink-300 to-rose-300 dark:from-pink-800 dark:to-rose-800 rounded-t-sm hover:from-pink-500 hover:to-rose-500 transition-all"
                                style={{ height: `${(day.revenue / maxWeeklyRevenue) * 90}%`}}
                             ></div>
-                           <span className="text-xs font-semibold text-gray-400 dark:text-slate-500">{day.day}</span>
+                           <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">{day.day}</span>
                         </div>
                     ))}
                   </div>
@@ -449,49 +454,49 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
 
 
     const AppointmentsBlock = (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Agendamentos de Hoje</h2>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border dark:border-slate-800">
+            <h2 className="text-xl font-bold font-display tracking-tight text-slate-800 dark:text-slate-100 mb-4">Agendamentos de Hoje</h2>
             <div className="space-y-4">
                 {appointmentsToday.length > 0 ? appointmentsToday.map(appt => (
-                    <div key={appt.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div key={appt.id} className="flex items-center gap-4 p-3 bg-stone-50 dark:bg-slate-800 rounded-lg">
                         <div className="flex items-center gap-2 text-sm font-semibold text-pink-600 dark:text-pink-400 w-24">
                             <Clock className="w-4 h-4"/>
                             <span>{new Date(appt.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="border-l-2 border-pink-200 dark:border-pink-800 pl-4 flex-grow">
-                            <p className="font-semibold text-gray-700 dark:text-slate-200">{appt.clientName}</p>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">{appt.treatment}</p>
+                            <p className="font-semibold text-slate-700 dark:text-slate-200">{appt.clientName}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{appt.treatment}</p>
                         </div>
                     </div>
                 )) : (
-                    <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum agendamento para hoje.</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-center py-4">Nenhum agendamento para hoje.</p>
                 )}
             </div>
         </div>
     );
     
     const RemindersBlock = (
-         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Lembretes de Tarefas</h2>
+         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border dark:border-slate-800">
+            <h2 className="text-xl font-bold font-display tracking-tight text-slate-800 dark:text-slate-100 mb-4">Lembretes de Tarefas</h2>
             <div className="space-y-3">
                {tasksWithReminders.length > 0 ? tasksWithReminders.map(task => (
-                 <div key={task.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                 <div key={task.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 dark:hover:bg-slate-800">
                     <div className={`p-2 rounded-full ${task.statusInfo?.iconBgColor}`}>
                         {task.statusInfo?.icon}
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold text-gray-700 dark:text-slate-200">{task.title}</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-200">{task.title}</p>
                         <div className="flex items-center gap-3 text-sm">
                            <p className={`font-semibold ${task.statusInfo?.color}`}>{task.statusInfo?.text}</p>
-                           {task.client_id && <p className="text-gray-500 dark:text-slate-400">| {clientMap.get(task.client_id)}</p>}
+                           {task.client_id && <p className="text-slate-500 dark:text-slate-400">| {clientMap.get(task.client_id)}</p>}
                         </div>
                     </div>
-                    <button onClick={() => setActiveView('tasks')} className="p-2 text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 rounded-full" aria-label="Ver tarefas">
+                    <button onClick={() => setActiveView('tasks')} className="p-2 text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 rounded-full" aria-label="Ver tarefas">
                         <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>
                )) : (
-                   <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhuma tarefa urgente. Bom trabalho!</p>
+                   <p className="text-slate-500 dark:text-slate-400 text-center py-4">Nenhuma tarefa urgente. Bom trabalho!</p>
                )}
             </div>
         </div>
@@ -500,46 +505,46 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
     const StatsBlock = (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard 
-                icon={<DollarSign className="w-6 h-6" />}
+                icon={<DollarSign />}
                 title="Receita do Mês"
                 value={revenueThisMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 description="Faturamento neste mês"
-                colorClass="bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
+                gradientClass="bg-gradient-to-br from-green-500 to-emerald-500"
             />
              <StatCard 
-                icon={<Users className="w-6 h-6" />}
+                icon={<Users />}
                 title="Total de Clientes"
                 value={newClientsThisMonth}
                 description="Clientes na sua base"
-                colorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+                gradientClass="bg-gradient-to-br from-blue-500 to-indigo-500"
             />
             <StatCard 
-                icon={<CalendarDays className="w-6 h-6" />}
+                icon={<CalendarDays />}
                 title="Agendamentos Hoje"
                 value={appointmentsToday.length}
                 description="Compromissos para hoje"
-                colorClass="bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-400"
+                gradientClass="bg-gradient-to-br from-pink-500 to-rose-500"
             />
             <StatCard 
-                icon={<CheckSquare className="w-6 h-6" />}
+                icon={<CheckSquare />}
                 title="Tarefas Pendentes"
                 value={pendingTasks.length}
                 description="Tarefas a serem concluídas"
-                colorClass="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400"
+                gradientClass="bg-gradient-to-br from-amber-500 to-orange-500"
             />
         </div>
     );
     
     const ActivityBlock = (
-         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Atividade Recente</h2>
+         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border dark:border-slate-800">
+            <h2 className="text-xl font-bold font-display tracking-tight text-slate-800 dark:text-slate-100 mb-4">Atividade Recente</h2>
             <ul className="space-y-4">
                {activityFeed.map(item => (
                    <li key={item.id} className="flex items-start gap-3">
                        <ActivityIcon type={item.type} />
                        <div className="flex-grow">
-                           <p className="text-sm text-gray-700 dark:text-slate-300">{item.text}</p>
-                           <p className="text-xs text-gray-400 dark:text-slate-500">
+                           <p className="text-sm text-slate-700 dark:text-slate-300">{item.text}</p>
+                           <p className="text-xs text-slate-400 dark:text-slate-500">
                                {item.timestamp.toLocaleDateString('pt-BR')}
                            </p>
                        </div>
@@ -552,36 +557,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
     const InfographicBlock = <ClinicOverviewInfographic clients={clients} stages={stages} appointments={appointments} transactions={transactions} />;
 
     return (
-        <div>
+        <div className="font-sans">
             <div className="flex items-center gap-2 mb-6">
                 {showBackButton && (
-                    <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400" aria-label="Voltar">
+                    <button onClick={onBack} className="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400" aria-label="Voltar">
                         <ArrowLeft className="w-6 h-6" />
                     </button>
                 )}
-                <h1 className="text-3xl font-bold text-gray-700 dark:text-slate-200 hidden sm:block">Dashboard</h1>
-                {/* Mobile Header */}
-                <div className="sm:hidden text-center flex-grow">
-                    <div className="text-2xl font-bold text-pink-500">EstéticaCRM</div>
-                    <h1 className="text-2xl font-semibold text-gray-700 dark:text-slate-200 mt-1">Dashboard</h1>
-                </div>
+                 <h1 className="text-3xl font-bold font-display tracking-tight text-slate-800 dark:text-slate-100">Dashboard</h1>
             </div>
 
-            {/* Mobile Layout */}
-            <div className="sm:hidden space-y-8">
+            {/* Layout Unificado */}
+            <div className="space-y-8">
                 {StatsBlock}
                 {InfographicBlock}
-                {AppointmentsBlock}
-                {RemindersBlock}
-                {ActivityBlock}
-                <AIAgentsSection clients={clients} transactions={transactions} tasks={tasks} appointments={appointments} services={services} setActiveView={setActiveView} />
-            </div>
-            
-            {/* Desktop Layout */}
-            <div className="hidden sm:block space-y-8">
-                {StatsBlock}
-                {InfographicBlock}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
                         {AppointmentsBlock}
                         {RemindersBlock}

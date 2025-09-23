@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Task, Client } from '../types.ts';
 import TaskModal from './TaskModal.tsx';
@@ -7,7 +8,8 @@ import ViewHeader from './ViewHeader.tsx';
 interface TasksViewProps {
   tasks: Task[];
   clients: Client[];
-  onSave: (data: Omit<Task, 'id' | 'completed'> & { id?: string }) => Promise<void>;
+  // Fix: Updated `onSave` parameter type to omit database-generated fields.
+  onSave: (data: Omit<Task, 'id' | 'completed' | 'user_id' | 'created_at'> & { id?: string }) => Promise<void>;
   onToggle: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   showBackButton?: boolean;
@@ -46,7 +48,7 @@ const TasksView: React.FC<TasksViewProps> = ({ tasks, clients, onSave, onToggle,
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
   const [filter, setFilter] = React.useState<'all' | 'pending' | 'completed'>('pending');
 
-  const handleSaveTask = async (taskData: Omit<Task, 'id' | 'completed'> & { id?: string }) => {
+  const handleSaveTask = async (taskData: Omit<Task, 'id' | 'completed' | 'user_id' | 'created_at'> & { id?: string }) => {
     await onSave(taskData);
     setModalOpen(false);
     setEditingTask(null);

@@ -117,7 +117,7 @@ const SearchView: React.FC<SearchViewProps> = ({
         client: { title: 'Clientes', icon: <UserCircle className="w-5 h-5" /> },
         appointment: { title: 'Agendamentos', icon: <CalendarDays className="w-5 h-5" /> },
         task: { title: 'Tarefas', icon: <CheckSquare className="w-5 h-5" /> },
-        note: { title: 'Notas', icon: <FileText className="w-5 h-5" /> },
+        note: { title: 'Anotações', icon: <FileText className="w-5 h-5" /> },
     };
     
     const renderResultData = (result: SearchResult) => {
@@ -151,7 +151,7 @@ const SearchView: React.FC<SearchViewProps> = ({
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Buscar por clientes, tarefas, notas..."
+                            placeholder="Buscar por clientes, tarefas, anotações..."
                             className="w-full bg-gray-100 dark:bg-slate-700 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
                         />
                     </div>

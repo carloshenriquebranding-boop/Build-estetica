@@ -9,8 +9,7 @@ import { ListOrdered } from './icons/ListOrdered.tsx';
 import { ChevronsUpDown as ChevronsUpDownIcon } from './icons/ChevronsUpDown.tsx';
 import { Trash } from './icons/Trash.tsx';
 import TableCreator from './TableCreator.tsx';
-import { Type as TypeIcon } from './icons/Type.tsx';
-import { Eraser } from './icons/Eraser.tsx';
+import { TextColor } from './icons/index.ts';
 import Dropdown from './Dropdown.tsx';
 
 const ToolbarButton: React.FC<{ onClick?: () => void; isActive?: boolean; children: React.ReactNode, title: string }> = ({ onClick, isActive, children, title }) => (
@@ -31,17 +30,21 @@ const ColorPickerButton: React.FC<{ editor: Editor }> = ({ editor }) => {
     const currentColor = editor.getAttributes('textStyle').color;
 
     return (
-        <div className="relative" title="Cor do Texto">
+        <div className="relative p-2 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 cursor-pointer" title="Cor do Texto">
             <input
                 type="color"
                 onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
+                value={currentColor || '#000000'} // Default to black for the color picker itself
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <div className="p-2 rounded-md text-slate-700 dark:text-slate-300 pointer-events-none">
-                <div className="relative">
-                    <TypeIcon className="w-5 h-5" />
-                    <div className="absolute bottom-0 left-1 right-1 h-1 rounded" style={{ backgroundColor: currentColor || 'transparent' }}></div>
-                </div>
+            {/* Wrapper for icon and underline */}
+            <div className="relative text-slate-700 dark:text-slate-300 pointer-events-none">
+                <TextColor className="w-5 h-5" />
+                <div 
+                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" 
+                    // Use CSS 'currentColor' to match the icon color if no specific color is set.
+                    style={{ backgroundColor: currentColor || 'currentColor' }}
+                ></div>
             </div>
         </div>
     );
@@ -49,6 +52,26 @@ const ColorPickerButton: React.FC<{ editor: Editor }> = ({ editor }) => {
 
 
 const TextEditorToolbar: React.FC<{ editor: Editor }> = ({ editor }) => {
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+
+  // This effect subscribes to editor events to force the toolbar to re-render,
+  // ensuring the "isActive" state of buttons is always up-to-date.
+  React.useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const handler = () => {
+      forceUpdate();
+    };
+
+    editor.on('transaction', handler);
+    
+    return () => {
+      editor.off('transaction', handler);
+    };
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
@@ -65,14 +88,11 @@ const TextEditorToolbar: React.FC<{ editor: Editor }> = ({ editor }) => {
       <ToolbarButton onClick={() => editor.chain().focus().toggleMark('italic').run()} isActive={editor.isActive('italic')} title="Itálico">
         <Italic className="w-5 h-5" />
       </ToolbarButton>
-      <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')} title="Sublinhado">
+      <ToolbarButton onClick={() => editor.chain().focus().toggleMark('underline').run()} isActive={editor.isActive('underline')} title="Sublinhado">
         <UnderlineIcon className="w-5 h-5" />
       </ToolbarButton>
       <div className="h-6 border-l border-gray-300 dark:border-slate-600 mx-2"></div>
       <ColorPickerButton editor={editor} />
-      <ToolbarButton onClick={() => editor.chain().focus().unsetColor().run()} title="Remover Cor">
-        <Eraser className="w-5 h-5" />
-      </ToolbarButton>
       <div className="h-6 border-l border-gray-300 dark:border-slate-600 mx-2"></div>
       <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Lista com Marcadores">
         <List className="w-5 h-5" />

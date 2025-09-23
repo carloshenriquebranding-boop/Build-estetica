@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Stage, Client, ClientTask, Service, Note } from '../types.ts';
 import KanbanColumn from './KanbanColumn.tsx';
@@ -14,7 +15,8 @@ interface KanbanBoardProps {
   notes: Note[];
   onNavigateToNotes: (searchTerm: string) => void;
   onClientStageChange: (clientId: string, newStageId: string) => Promise<void>;
-  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id'>, stageId: string) => Promise<void>;
+  // Fix: Changed return type from Promise<void> to Promise<Client | undefined> to match the handler in App.tsx. Also updated clientData type.
+  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>, stageId: string) => Promise<Client | undefined>;
   onOpenEditClientModal: (client: Client) => void;
   onAddStage: (title: string) => Promise<void>;
   onUpdateStage: (stageId: string, updates: Partial<Omit<Stage, 'id'>>) => Promise<void>;
@@ -89,7 +91,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     setAddClientModalOpen(true);
   };
 
-  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id'>) => {
+  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => {
     if (!stageForNewClient) return;
     setIsSubmitting(true);
     await onAddClient(clientData, stageForNewClient);

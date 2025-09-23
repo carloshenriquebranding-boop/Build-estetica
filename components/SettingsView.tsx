@@ -32,6 +32,30 @@ const SettingCard: React.FC<{
   </div>
 );
 
+// New Sub-component for clarity and robustness
+const ThemeButton: React.FC<{
+  activeTheme: Theme;
+  buttonTheme: Theme;
+  onClick: (theme: Theme) => void;
+  children: React.ReactNode;
+}> = ({ activeTheme, buttonTheme, onClick, children }) => {
+  const isActive = activeTheme === buttonTheme;
+  
+  const baseClasses = "px-4 py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors w-full";
+  const activeClasses = "bg-white dark:bg-slate-500 shadow text-pink-600 dark:text-pink-300";
+  const inactiveClasses = "text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600";
+
+  return (
+    <button
+      onClick={() => onClick(buttonTheme)}
+      className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+
 const SettingsView: React.FC<SettingsViewProps> = ({ theme, onThemeChange, showBackButton, onBack }) => {
   const [isWhatsappModalOpen, setWhatsappModalOpen] = React.useState(false);
   const [isWhatsappConnected, setIsWhatsappConnected] = React.useState(false);
@@ -50,27 +74,13 @@ const SettingsView: React.FC<SettingsViewProps> = ({ theme, onThemeChange, showB
           title="Aparência"
           description="Personalize a aparência do sistema para modo claro ou escuro."
         >
-          <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-slate-700 rounded-lg">
-            <button
-              onClick={() => onThemeChange('light')}
-              className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${
-                theme === 'light'
-                  ? 'bg-white dark:bg-slate-500 shadow text-pink-600 dark:text-pink-300'
-                  : 'text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-              }`}
-            >
+          <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-slate-700 rounded-lg w-full">
+            <ThemeButton activeTheme={theme} buttonTheme="light" onClick={onThemeChange}>
               <Sun className="w-5 h-5" /> Claro
-            </button>
-            <button
-              onClick={() => onThemeChange('dark')}
-              className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${
-                theme === 'dark'
-                  ? 'bg-white dark:bg-slate-500 shadow text-pink-600 dark:text-pink-300'
-                  : 'text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-              }`}
-            >
+            </ThemeButton>
+            <ThemeButton activeTheme={theme} buttonTheme="dark" onClick={onThemeChange}>
               <Moon className="w-5 h-5" /> Escuro
-            </button>
+            </ThemeButton>
           </div>
         </SettingCard>
         

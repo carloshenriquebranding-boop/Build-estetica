@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Stage, Service, WhatsappChat, WhatsappMessage, Client } from '../types.ts';
 import { Loader2, Send, Paperclip, ArrowUpRightSquare } from './icons/index.ts';
@@ -9,7 +10,8 @@ import { supabase } from '../services/supabaseClient.ts';
 const OmnichannelView: React.FC<{
   stages: Stage[];
   services: Service[];
-  onAddClient: (clientData: Omit<Client, 'id' | 'user_id'>) => void;
+  // Fix: Changed return type and clientData type to match the handler in App.tsx.
+  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'created_at'>) => Promise<Client | undefined>;
   showBackButton?: boolean;
   onBack?: () => void;
 }> = ({ stages, services, onAddClient, showBackButton, onBack }) => {

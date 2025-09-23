@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Client, Stage } from '../types.ts';
 import { Mail, MessageSquare, Loader2, Send } from './icons/index.ts';
@@ -6,7 +7,15 @@ import { INPUT_CLASSES } from '../constants.ts';
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
 import TextEditorToolbar from './TextEditorToolbar.tsx';
+import { Table } from '@tiptap/extension-table';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableRow } from '@tiptap/extension-table-row';
+import { Color } from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+
 
 interface CampaignsViewProps {
   clients: Client[];
@@ -19,7 +28,16 @@ const CampaignsView: React.FC<CampaignsViewProps> = ({ clients, stages, showBack
   const [activeTab, setActiveTab] = React.useState<'email' | 'whatsapp'>('email');
   
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+        StarterKit, 
+        Underline,
+        Table.configure({ resizable: true }),
+        TableRow,
+        TableHeader,
+        TableCell,
+        TextStyle,
+        Color
+    ],
     content: '<p>Olá {{nome_cliente}}, ...</p>',
     editorProps: {
       attributes: {

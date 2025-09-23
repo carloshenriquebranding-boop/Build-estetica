@@ -1,3 +1,5 @@
+
+
 import * as React from 'react';
 import type { Service } from '../types.ts';
 import { Plus, Loader2, Pencil, Trash } from './icons/index.ts';
@@ -6,7 +8,8 @@ import { INPUT_CLASSES } from '../constants.ts';
 
 interface ServicesViewProps {
   services: Service[];
-  onAdd: (data: Omit<Service, 'id'>) => Promise<void>;
+  // Fix: Changed `onAdd` parameter type to omit `user_id` as it's handled by the database service.
+  onAdd: (data: Omit<Service, 'id' | 'user_id'>) => Promise<void>;
   onUpdate: (data: Service) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   showBackButton?: boolean;
@@ -49,19 +52,32 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
     e.preventDefault();
     setIsSubmitting(true);
     
-    if (editingService) {
-        await onUpdate({ ...editingService, name: serviceName, price: servicePrice, description: serviceDescription });
-    } else {
-        await onAdd({ name: serviceName, price: servicePrice, description: serviceDescription });
+    try {
+      if (editingService) {
+          await onUpdate({ ...editingService, name: serviceName, price: servicePrice, description: serviceDescription });
+      } else {
+          // Fix: The submitted object now matches the updated `onAdd` prop type.
+          await onAdd({ name: serviceName, price: servicePrice, description: serviceDescription });
+      }
+      handleCancel(); // Only cancel on success
+    } catch (error) {
+        console.error("Failed to save service:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        alert(`Erro ao salvar o serviço. Verifique sua conexão e se as permissões (RLS) da tabela 'services' estão configuradas corretamente no Supabase. Detalhes: ${errorMessage}`);
+    } finally {
+        setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    handleCancel();
   };
   
   const handleDelete = async (serviceId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este serviço?')) {
-        await onDelete(serviceId);
+        try {
+            await onDelete(serviceId);
+        } catch (error) {
+            console.error("Failed to delete service:", error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            alert(`Erro ao excluir o serviço. Verifique as permissões (RLS). Detalhes: ${errorMessage}`);
+        }
     }
   };
 
