@@ -10,6 +10,8 @@ const stageIds = {
   negotiation: 'stage-3',
   closed: 'stage-4',
   lost: 'stage-5',
+  qualificacao: 'stage-6',
+  frios: 'stage-7',
 };
 
 const serviceIds = {
@@ -36,11 +38,13 @@ const chatIds = {
 // --- Mock Data ---
 
 export const mockStages: Stage[] = [
-  { id: stageIds.new, user_id: userId, title: 'Novo Contato', order: 0, color: 'blue' },
-  { id: stageIds.contacted, user_id: userId, title: 'Contato Feito', order: 1, color: 'purple' },
-  { id: stageIds.negotiation, user_id: userId, title: 'Negociação', order: 2, color: 'yellow' },
-  { id: stageIds.closed, user_id: userId, title: 'Cliente Fechado', order: 3, color: 'green' },
-  { id: stageIds.lost, user_id: userId, title: 'Perdido', order: 4, color: 'gray' },
+  { id: stageIds.new, user_id: userId, title: 'Novo Contato', order: 0, color: 'indigo' },
+  { id: stageIds.qualificacao, user_id: userId, title: 'Qualificação', order: 1, color: 'purple' },
+  { id: stageIds.contacted, user_id: userId, title: 'Contato Feito', order: 2, color: 'pink' },
+  { id: stageIds.negotiation, user_id: userId, title: 'Negociação', order: 3, color: 'yellow' },
+  { id: stageIds.closed, user_id: userId, title: 'Cliente Fechado', order: 4, color: 'green' },
+  { id: stageIds.frios, user_id: userId, title: 'Leads Frios', order: 5, color: 'blue' },
+  { id: stageIds.lost, user_id: userId, title: 'Perdido', order: 6, color: 'gray' },
 ];
 
 export const mockServices: Service[] = [
@@ -57,21 +61,25 @@ export const mockServices: Service[] = [
 ];
 
 export const mockClients: Client[] = [
-  { id: clientIds[0], stage_id: stageIds.new, user_id: userId, name: 'Ana Carolina Souza', phone: '(11) 98765-4321', email: 'ana.souza@email.com', treatment: 'Limpeza de Pele Profunda', created_at: new Date().toISOString() },
-  { id: clientIds[1], stage_id: stageIds.new, user_id: userId, name: 'Bruno Alves', phone: '(21) 91234-5678', email: 'bruno.alves@email.com', treatment: 'Peeling Químico', created_at: new Date().toISOString() },
-  { id: clientIds[2], stage_id: stageIds.contacted, user_id: userId, name: 'Carla Dias', phone: '(31) 99988-7766', email: 'carla.dias@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString() },
-  { id: clientIds[3], stage_id: stageIds.contacted, user_id: userId, name: 'Daniela Ferreira', phone: '(41) 98877-6655', email: 'daniela.f@email.com', treatment: 'Microagulhamento', created_at: new Date().toISOString() },
-  { id: clientIds[4], stage_id: stageIds.negotiation, user_id: userId, name: 'Eduardo Lima', phone: '(51) 97766-5544', email: 'edu.lima@email.com', treatment: 'Preenchimento Labial', address: 'Rua das Flores, 123, Porto Alegre, RS', created_at: new Date().toISOString() },
-  { id: clientIds[5], stage_id: stageIds.negotiation, user_id: userId, name: 'Fernanda Lima', phone: '(61) 96655-4433', email: 'fernanda.lima@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString() },
-  { id: clientIds[6], stage_id: stageIds.closed, user_id: userId, name: 'Gabriel Costa', phone: '(71) 95544-3322', email: 'gabriel.costa@email.com', treatment: 'Drenagem Linfática', created_at: new Date().toISOString() },
-  { id: clientIds[7], stage_id: stageIds.closed, user_id: userId, name: 'Helena Martins', phone: '(81) 94433-2211', email: 'helena.m@email.com', treatment: 'Microagulhamento', created_at: new Date().toISOString() },
-  { id: clientIds[8], stage_id: stageIds.closed, user_id: userId, name: 'Isabela Rocha', phone: '(91) 93322-1100', email: 'isabela.rocha@email.com', treatment: 'Peeling Químico', created_at: new Date().toISOString() },
-  { id: clientIds[9], stage_id: stageIds.closed, user_id: userId, name: 'João Pedro Santos', phone: '(11) 92211-0099', email: 'joao.santos@email.com', treatment: 'Jato de Plasma', created_at: new Date().toISOString() },
-  { id: clientIds[10], stage_id: stageIds.lost, user_id: userId, name: 'Karen Oliveira', phone: '(21) 91100-9988', email: 'karen.o@email.com', treatment: 'Preenchimento Labial', created_at: new Date().toISOString() },
-  { id: clientIds[11], stage_id: stageIds.new, user_id: userId, name: 'Lucas Mendes', phone: '(31) 98765-1234', email: 'lucas.mendes@email.com', treatment: 'Massagem Modeladora', created_at: new Date().toISOString() },
-  { id: clientIds[12], stage_id: stageIds.contacted, user_id: userId, name: 'Mariana Azevedo', phone: '(41) 95432-1098', email: 'mari.azevedo@email.com', treatment: 'Radiofrequência Facial', created_at: new Date().toISOString() },
-  { id: clientIds[13], stage_id: stageIds.negotiation, user_id: userId, name: 'Nicolas Barros', phone: '(51) 93210-9876', email: 'nicolas.b@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString() },
-  { id: clientIds[14], stage_id: stageIds.closed, user_id: userId, name: 'Olivia Pereira', phone: '(61) 92109-8765', email: 'olivia.p@email.com', treatment: 'Micropigmentação de Sobrancelhas', created_at: new Date().toISOString() },
+  { id: clientIds[0], stage_id: stageIds.new, user_id: userId, name: 'Ana Carolina Souza', phone: '(11) 98765-4321', email: 'ana.souza@email.com', treatment: 'Limpeza de Pele Profunda', created_at: new Date().toISOString(), order: 0 },
+  { id: clientIds[1], stage_id: stageIds.qualificacao, user_id: userId, name: 'Bruno Alves', phone: '(21) 91234-5678', email: 'bruno.alves@email.com', treatment: 'Peeling Químico', created_at: new Date().toISOString(), order: 1 },
+  { id: clientIds[11], stage_id: stageIds.new, user_id: userId, name: 'Lucas Mendes', phone: '(31) 98765-1234', email: 'lucas.mendes@email.com', treatment: 'Massagem Modeladora', created_at: new Date().toISOString(), order: 2 },
+  
+  { id: clientIds[2], stage_id: stageIds.contacted, user_id: userId, name: 'Carla Dias', phone: '(31) 99988-7766', email: 'carla.dias@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString(), order: 0 },
+  { id: clientIds[3], stage_id: stageIds.contacted, user_id: userId, name: 'Daniela Ferreira', phone: '(41) 98877-6655', email: 'daniela.f@email.com', treatment: 'Microagulhamento', created_at: new Date().toISOString(), order: 1 },
+  { id: clientIds[12], stage_id: stageIds.frios, user_id: userId, name: 'Mariana Azevedo', phone: '(41) 95432-1098', email: 'mari.azevedo@email.com', treatment: 'Radiofrequência Facial', created_at: new Date().toISOString(), order: 2 },
+
+  { id: clientIds[4], stage_id: stageIds.negotiation, user_id: userId, name: 'Eduardo Lima', phone: '(51) 97766-5544', email: 'edu.lima@email.com', treatment: 'Preenchimento Labial', address: 'Rua das Flores, 123, Porto Alegre, RS', created_at: new Date().toISOString(), order: 0 },
+  { id: clientIds[5], stage_id: stageIds.negotiation, user_id: userId, name: 'Fernanda Lima', phone: '(61) 96655-4433', email: 'fernanda.lima@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString(), order: 1 },
+  { id: clientIds[13], stage_id: stageIds.negotiation, user_id: userId, name: 'Nicolas Barros', phone: '(51) 93210-9876', email: 'nicolas.b@email.com', treatment: 'Aplicação de Botox', created_at: new Date().toISOString(), order: 2 },
+  
+  { id: clientIds[6], stage_id: stageIds.closed, user_id: userId, name: 'Gabriel Costa', phone: '(71) 95544-3322', email: 'gabriel.costa@email.com', treatment: 'Drenagem Linfática', created_at: new Date().toISOString(), order: 0 },
+  { id: clientIds[7], stage_id: stageIds.closed, user_id: userId, name: 'Helena Martins', phone: '(81) 94433-2211', email: 'helena.m@email.com', treatment: 'Microagulhamento', created_at: new Date().toISOString(), order: 1 },
+  { id: clientIds[8], stage_id: stageIds.closed, user_id: userId, name: 'Isabela Rocha', phone: '(91) 93322-1100', email: 'isabela.rocha@email.com', treatment: 'Peeling Químico', created_at: new Date().toISOString(), order: 2 },
+  { id: clientIds[9], stage_id: stageIds.closed, user_id: userId, name: 'João Pedro Santos', phone: '(11) 92211-0099', email: 'joao.santos@email.com', treatment: 'Jato de Plasma', created_at: new Date().toISOString(), order: 3 },
+  { id: clientIds[14], stage_id: stageIds.closed, user_id: userId, name: 'Olivia Pereira', phone: '(61) 92109-8765', email: 'olivia.p@email.com', treatment: 'Micropigmentação de Sobrancelhas', created_at: new Date().toISOString(), order: 4 },
+  
+  { id: clientIds[10], stage_id: stageIds.lost, user_id: userId, name: 'Karen Oliveira', phone: '(21) 91100-9988', email: 'karen.o@email.com', treatment: 'Preenchimento Labial', created_at: new Date().toISOString(), order: 0 },
 ];
 
 const today = new Date();

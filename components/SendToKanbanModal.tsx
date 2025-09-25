@@ -1,9 +1,11 @@
 
+
 import * as React from 'react';
 import type { Client, Stage, Service } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
 import { INPUT_CLASSES } from '../constants.ts';
+import AvatarUploader from './AvatarUploader.tsx';
 
 interface SendToKanbanModalProps {
   isOpen: boolean;
@@ -22,6 +24,7 @@ const SendToKanbanModal: React.FC<SendToKanbanModalProps> = ({
   const [phone, setPhone] = React.useState(initialData.phone);
   const [treatment, setTreatment] = React.useState(services[0]?.name || '');
   const [stageId, setStageId] = React.useState(stages[0]?.id || '');
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +33,7 @@ const SendToKanbanModal: React.FC<SendToKanbanModalProps> = ({
     
     try {
       // Fix: Added await and removed `created_at` from payload to align with updated handler.
-      await onAddClient({ name, phone, treatment, stage_id: stageId });
+      await onAddClient({ name, phone, treatment, stage_id: stageId, avatar_url: avatarUrl });
       onClose();
     } catch(error) {
       console.error("Error adding client from Omnichannel modal", error);
@@ -50,6 +53,9 @@ const SendToKanbanModal: React.FC<SendToKanbanModalProps> = ({
         </div>
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
+            <div className="flex justify-center">
+              <AvatarUploader currentAvatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
+            </div>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome</label>
               <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className={INPUT_CLASSES} />

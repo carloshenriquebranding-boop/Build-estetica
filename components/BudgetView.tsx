@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Budget, Client, Service, Stage, UserProfile, BudgetTemplateData, BudgetItem } from '../types.ts';
 import { Plus } from './icons/index.ts';
@@ -13,7 +14,7 @@ interface BudgetViewProps {
   budgets: Budget[];
   onTemplateSave: (data: BudgetTemplateData) => Promise<void>;
   onSaveBudget: (budget: Omit<Budget, 'id' | 'user_id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Budget>;
-  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'stage_id'>, stageId: string) => Promise<Client | undefined>;
+  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'stage_id' | 'created_at'>, stageId: string) => Promise<Client | undefined>;
   showBackButton?: boolean;
   onBack?: () => void;
 }

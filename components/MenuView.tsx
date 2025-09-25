@@ -1,8 +1,9 @@
-
-
 import * as React from 'react';
 import type { UserProfile } from '../types.ts';
-import { Home, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, CheckSquare, FileText, MessageSquare, Settings, UserCircle, ShieldCheck, FileSpreadsheet, LogOut, MoreHorizontal, Search, HelpCircle, Megaphone } from './icons/index.ts';
+import { Home, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, CheckSquare, FileText, MessageSquare, Settings, UserCircle, ShieldCheck, FileSpreadsheet, LogOut, MoreHorizontal, Search, HelpCircle, Megaphone, Webhook, Wand2 } from './icons/index.ts';
+import { supabase } from '../services/supabaseClient.ts';
+import FeaturePreviewTooltip from './FeaturePreviewTooltip.tsx';
+import { FEATURE_PREVIEWS } from '../constants.ts';
 
 interface MenuViewProps {
   activeView: string;
@@ -13,41 +14,66 @@ interface MenuViewProps {
   onOpenHelp: () => void;
 }
 
+const disabledViews = new Set(['omnichannel', 'campaigns', 'ai_agents', 'integrations']);
+
 const NavItem: React.FC<{
   icon: React.ReactElement<React.SVGProps<SVGSVGElement>>;
   label: string;
   view: string;
   activeView: string;
   onClick: (view: string) => void;
-}> = ({ icon, label, view, activeView, onClick }) => (
-  <li>
+}> = ({ icon, label, view, activeView, onClick }) => {
+  
+  const isDisabled = disabledViews.has(view);
+  const preview = isDisabled ? FEATURE_PREVIEWS[view as keyof typeof FEATURE_PREVIEWS] : null;
+
+  const button = (
     <button
-      onClick={() => onClick(view)}
+      onClick={!isDisabled ? () => onClick(view) : (e) => e.preventDefault()}
       className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
         activeView === view
           ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
-          : 'text-slate-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
+          : isDisabled
+            ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
       }`}
     >
       {React.cloneElement(icon, { className: "w-5 h-5 flex-shrink-0" })}
       <span>{label}</span>
     </button>
-  </li>
-);
+  );
+
+  return (
+    <li>
+      {preview ? (
+        <FeaturePreviewTooltip title={preview.title} description={preview.description}>
+          {button}
+        </FeaturePreviewTooltip>
+      ) : (
+        button
+      )}
+    </li>
+  );
+};
+
 
 const menuItems = [
+    // Active Items
     { view: 'dashboard', label: 'Dashboard', icon: <Home /> },
     { view: 'kanban', label: 'Funil', icon: <LayoutGrid /> },
     { view: 'clients', label: 'Clientes', icon: <Users /> },
     { view: 'calendar', label: 'Agenda', icon: <CalendarDays /> },
-    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare /> },
     { view: 'services', label: 'Serviços', icon: <Briefcase /> },
     { view: 'financial', label: 'Financeiro', icon: <DollarSign /> },
     { view: 'tasks', label: 'Tarefas', icon: <CheckSquare /> },
     { view: 'notes', label: 'Anotações', icon: <FileText /> },
     { view: 'prescription', label: 'Prescrições', icon: <FileSpreadsheet /> },
     { view: 'budget', label: 'Orçamentos', icon: <FileText /> },
+    // Inactive Items (Grouped at the end)
+    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare /> },
     { view: 'campaigns', label: 'Campanhas', icon: <Megaphone /> },
+    { view: 'ai_agents', label: 'IA Agents', icon: <Wand2 /> },
+    { view: 'integrations', label: 'Automação & API', icon: <Webhook /> },
 ];
 
 const utilityItems = [
@@ -75,7 +101,13 @@ const MenuView: React.FC<MenuViewProps> = ({ activeView, setActiveView, isAdmin,
         setUserMenuOpen(false);
     };
 
-    const handleLogout = () => window.location.reload();
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error logging out:', error);
+        }
+        // onAuthStateChange in App.tsx will handle the state transition
+    };
 
     const handleItemClick = (view: string) => {
       if (view === 'search') {

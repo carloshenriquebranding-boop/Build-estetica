@@ -1,10 +1,12 @@
 
+
 import * as React from 'react';
 import type { Client, Stage, Service, Task, Note, Appointment, Budget, Transaction } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
 import { UserCircle, ClipboardList, NotebookText, Trash, Plus, CalendarDays, FileText, DollarSign, FileSpreadsheet } from './icons/index.ts';
 import { INPUT_CLASSES } from '../constants.ts';
+import AvatarUploader from './AvatarUploader.tsx';
 
 interface EditClientModalProps {
   client: Client;
@@ -54,6 +56,10 @@ const EditClientModal: React.FC<EditClientModalProps> = ({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+  
+  const handleAvatarChange = (base64Url: string) => {
+    setFormData(prev => ({...prev, avatar_url: base64Url}));
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +126,9 @@ const EditClientModal: React.FC<EditClientModalProps> = ({
           {activeTab === 'info' && (
             <form onSubmit={handleSubmit}>
               <div className="p-6 space-y-4">
+                <div className="flex justify-center">
+                    <AvatarUploader currentAvatarUrl={formData.avatar_url || null} onAvatarChange={handleAvatarChange} />
+                </div>
                 {/* Form fields from AddClientModal, adapted for editing */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Completo</label>
@@ -152,11 +161,6 @@ const EditClientModal: React.FC<EditClientModalProps> = ({
                  <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição</label>
                     <textarea name="description" id="description" value={formData.description || ''} onChange={handleInputChange} rows={3} className={INPUT_CLASSES} />
-                </div>
-                 <div>
-                    {/* Fix: Changed `notes` to `description` to match the Client type property for general notes/observations. */}
-                    <label htmlFor="description-obs" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Observações</label>
-                    <textarea name="description" id="description-obs" value={formData.description || ''} onChange={handleInputChange} rows={3} className={INPUT_CLASSES} />
                 </div>
               </div>
                <div className="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl flex-shrink-0">

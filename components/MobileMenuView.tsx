@@ -1,7 +1,6 @@
-
-
 import * as React from 'react';
-import { Home, LayoutGrid, Users, CalendarDays, MessageSquare, MoreHorizontal, CheckSquare, Briefcase, DollarSign, FileText, Settings, UserCircle, ShieldCheck, FileSpreadsheet, Search, HelpCircle, Megaphone } from './icons/index.ts';
+import { Home, LayoutGrid, Users, CalendarDays, MessageSquare, MoreHorizontal, CheckSquare, Briefcase, DollarSign, FileText, Settings, UserCircle, ShieldCheck, FileSpreadsheet, Search, HelpCircle, Megaphone, Webhook, Wand2, ArrowLeft } from './icons/index.ts';
+import { FEATURE_PREVIEWS } from '../constants.ts';
 
 interface MobileMenuViewProps {
   activeView: string;
@@ -19,20 +18,26 @@ const mainItems = [
 ];
 
 const allMenuItems = [
+    // Active Items
     { view: 'clients', label: 'Clientes', icon: <Users className="w-5 h-5" /> },
-    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare className="w-5 h-5" /> },
     { view: 'services', label: 'Serviços', icon: <Briefcase className="w-5 h-5" /> },
     { view: 'financial', label: 'Financeiro', icon: <DollarSign className="w-5 h-5" /> },
     { view: 'notes', label: 'Anotações', icon: <FileText className="w-5 h-5" /> },
     { view: 'prescription', label: 'Prescrições', icon: <FileSpreadsheet className="w-5 h-5" /> },
     { view: 'budget', label: 'Orçamentos', icon: <FileText className="w-5 h-5" /> },
+    // Inactive Items (Grouped at the end)
+    { view: 'omnichannel', label: 'Conversas', icon: <MessageSquare className="w-5 h-5" /> },
     { view: 'campaigns', label: 'Campanhas', icon: <Megaphone className="w-5 h-5" /> },
+    { view: 'ai_agents', label: 'IA Agents', icon: <Wand2 className="w-5 h-5" /> },
+    { view: 'integrations', label: 'Automação', icon: <Webhook className="w-5 h-5" /> },
+    // Utility Items
     { view: 'help', label: 'Ajuda', icon: <HelpCircle className="w-5 h-5" /> },
     { view: 'search', label: 'Busca', icon: <Search className="w-5 h-5" /> },
     { view: 'profile', label: 'Meu Perfil', icon: <UserCircle className="w-5 h-5" /> },
     { view: 'settings', label: 'Configurações', icon: <Settings className="w-5 h-5" /> },
 ];
 
+const disabledViews = new Set(['omnichannel', 'campaigns', 'ai_agents', 'integrations']);
 
 const NavItem: React.FC<{
   icon: React.ReactNode;
@@ -54,6 +59,26 @@ const NavItem: React.FC<{
   </button>
 );
 
+const FeaturePreviewPanel: React.FC<{
+    title: string;
+    description: string;
+    onBack: () => void;
+}> = ({ title, description, onBack }) => (
+    <div>
+        <div className="flex items-center gap-2 mb-4">
+            <button onClick={onBack} className="p-2 -ml-2 text-gray-500 dark:text-slate-400"><ArrowLeft className="w-5 h-5"/></button>
+            <h3 className="font-bold text-lg text-gray-800 dark:text-slate-100">Em Breve</h3>
+        </div>
+        <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+             <div className="inline-block p-3 bg-pink-100 dark:bg-pink-900/50 rounded-full text-pink-600 dark:text-pink-400">
+                <Wand2 className="w-8 h-8"/>
+            </div>
+            <h4 className="font-bold text-xl mt-3 text-gray-800 dark:text-slate-100">{title}</h4>
+            <p className="text-gray-600 dark:text-slate-300 mt-2">{description}</p>
+        </div>
+    </div>
+);
+
 
 const MoreMenuModal: React.FC<{ 
     onClose: () => void;
@@ -64,14 +89,22 @@ const MoreMenuModal: React.FC<{
     onOpenHelp: () => void;
 }> = ({ onClose, isAdmin, activeView, setActiveView, onOpenSearch, onOpenHelp }) => {
     
+    const [preview, setPreview] = React.useState<{title: string; description: string} | null>(null);
+
     const handleSelect = (view: string) => {
-        if (view === 'search') {
-            onOpenSearch();
-        } else if (view === 'help') {
-            onOpenHelp();
-        } else {
-            setActiveView(view);
+        const isDisabled = disabledViews.has(view);
+        if (isDisabled) {
+            const previewData = FEATURE_PREVIEWS[view as keyof typeof FEATURE_PREVIEWS];
+            if (previewData) {
+                setPreview(previewData);
+            }
+            return;
         }
+
+        if (view === 'search') onOpenSearch();
+        else if (view === 'help') onOpenHelp();
+        else setActiveView(view);
+        
         onClose();
     }
     
@@ -84,29 +117,39 @@ const MoreMenuModal: React.FC<{
         <>
             <div onClick={onClose} className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"></div>
             <div className="fixed bottom-20 left-4 right-4 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-4 z-50 md:hidden">
-                 <h3 className="font-bold text-lg text-gray-800 dark:text-slate-100 mb-2 px-2">Mais Opções</h3>
-                 <ul className="grid grid-cols-3 gap-2">
-                    {menuItems.map(item => (
-                         <li key={item.view}>
-                             <button
-                               onClick={() => handleSelect(item.view)}
-                               className={`w-full flex flex-col items-center gap-2 p-3 rounded-lg text-sm font-semibold transition-colors ${
-                                 activeView === item.view
-                                   ? 'bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300'
-                                   : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
-                               }`}
-                             >
-                               {item.icon}
-                               <span>{item.label}</span>
-                             </button>
-                           </li>
-                    ))}
-                 </ul>
+                 {preview ? (
+                     <FeaturePreviewPanel title={preview.title} description={preview.description} onBack={() => setPreview(null)} />
+                 ) : (
+                    <>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-slate-100 mb-2 px-2">Mais Opções</h3>
+                         <ul className="grid grid-cols-3 gap-2">
+                            {menuItems.map(item => {
+                                const isDisabled = disabledViews.has(item.view);
+                                return (
+                                 <li key={item.view}>
+                                     <button
+                                       onClick={() => handleSelect(item.view)}
+                                       className={`w-full flex flex-col items-center gap-2 p-3 rounded-lg text-sm font-semibold transition-colors ${
+                                         activeView === item.view
+                                           ? 'bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300'
+                                           : isDisabled
+                                             ? 'text-gray-400 dark:text-slate-500 cursor-pointer opacity-70'
+                                             : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                                       }`}
+                                     >
+                                       {item.icon}
+                                       <span>{item.label}</span>
+                                     </button>
+                                   </li>
+                                )
+                            })}
+                         </ul>
+                    </>
+                 )}
             </div>
         </>
     )
 }
-
 
 const MobileMenuView: React.FC<MobileMenuViewProps> = ({ activeView, setActiveView, isAdmin, onOpenSearch, onOpenHelp }) => {
     const [isMoreMenuOpen, setMoreMenuOpen] = React.useState(false);

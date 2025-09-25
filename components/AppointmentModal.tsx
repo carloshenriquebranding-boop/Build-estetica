@@ -37,8 +37,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   React.useEffect(() => {
     if (isOpen) {
       const initialDate = appointment?.date || selectedDate || new Date();
-      setDate(initialDate.toISOString().split('T')[0]);
-      setTime(initialDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+      const dateObj = initialDate instanceof Date ? initialDate : new Date(initialDate);
+      
+      setDate(dateObj.toISOString().split('T')[0]);
+      setTime(dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
       setClientId(appointment?.client_id || (clients[0]?.id || ''));
       setTreatment(appointment?.treatment || (services[0]?.name || ''));
       setAppointmentNotes(appointment?.notes || '');

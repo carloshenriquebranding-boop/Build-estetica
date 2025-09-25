@@ -8,27 +8,6 @@ export interface Stage {
   color: string;
 }
 
-export interface Client {
-  id: string;
-  user_id: string;
-  stage_id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  address?: string;
-  description?: string;
-  created_at: string;
-  // Fix: Made treatment optional as it's not a required DB field and is not always provided.
-  treatment?: string;
-}
-
-export interface ClientTask {
-  id: string;
-  client_id: string;
-  title: string;
-  completed: boolean;
-}
-
 export interface Service {
   id: string;
   user_id: string;
@@ -37,89 +16,106 @@ export interface Service {
   description?: string;
 }
 
+export interface Client {
+  id: string;
+  stage_id: string;
+  user_id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  treatment: string;
+  created_at: string;
+  order: number;
+  description?: string;
+  address?: string;
+  avatar_url?: string | null;
+}
+
+export interface Task {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  due_date?: string | null;
+  client_id?: string | null;
+  created_at: string;
+}
+
+export type ClientTask = Task & { client_id: string };
+
+export interface Appointment {
+  id: string;
+  client_id: string;
+  clientName: string;
+  treatment: string;
+  date: Date | string;
+  reminder_minutes_before: number | null;
+  reminder_sent: boolean;
+  notes?: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  type: 'income' | 'expense';
+  amount: number;
+  description: string;
+  date: Date | string;
+  client_id: string | null;
+  service_id: string | null;
+  status: 'paid' | 'pending' | 'overdue';
+  created_at: string;
+}
+
 export interface Note {
   id: string;
   user_id: string;
   client_id: string | null;
   title: string;
-  content: string; // JSON from Tiptap editor
+  content: string | object;
   type: 'standard' | 'prescription';
   tags: string[];
   created_at: string;
   updated_at: string;
 }
 
-export interface Appointment {
-  id: string;
-  client_id: string;
-  clientName: string; // denormalized for convenience
-  treatment: string; // from treatment_name column
-  date: Date; // Keep as Date object for calendar components
-  notes?: string;
-  reminder_minutes_before: number | null;
-  reminder_sent: boolean;
-}
-
-export interface Transaction {
-  id: string;
-  user_id: string;
-  client_id: string | null;
-  service_id: string | null;
-  type: 'income' | 'expense';
-  status: 'paid' | 'pending' | 'overdue';
-  amount: number;
-  description: string;
-  date: Date; // Keep as Date object for components
-  created_at: string;
-}
-
-export interface Task {
-  id: string;
-  user_id: string;
-  client_id?: string | null;
-  title: string;
-  description?: string;
-  completed: boolean;
-  due_date?: string | null; // Stored as 'YYYY-MM-DD'
-  created_at: string;
-}
-
 export interface BudgetTemplateData {
-    primaryColor: string;
-    secondaryColor: string;
-    textColor: string;
-    fontFamily: string;
-    logoUrl: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+  fontFamily: string;
+  logoUrl: string | null;
+}
+
+export interface PrescriptionTemplate {
+  id: string;
+  user_id: string;
+  template_data: {
+    business_name: string;
+    professional_name: string;
+    professional_info: string;
+    address: string;
+    contact_info: string;
+    font_family: string;
+  };
 }
 
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  business_email?: string;
+  avatar_url: string | null;
   business_name: string;
   business_phone?: string;
   business_address?: string;
-  business_email?: string;
-  avatar_url?: string;
   role: 'user' | 'admin';
   is_active: boolean;
   subscription_status: 'active' | 'pending_payment' | 'expired' | 'canceled';
   subscription_expires_at: string | null;
   budget_template?: BudgetTemplateData;
-  prescription_template?: any;
-}
-
-export interface PrescriptionTemplate {
-    id: string;
-    user_id: string;
-    template_data: {
-        business_name: string;
-        professional_name: string;
-        professional_info: string;
-        address: string;
-        contact_info: string;
-        font_family: string;
-    }
+  prescription_template?: PrescriptionTemplate['template_data'];
 }
 
 export interface BudgetItem {
@@ -131,15 +127,15 @@ export interface BudgetItem {
 }
 
 export interface Budget {
-  id: string;
-  user_id: string;
-  client_id: string;
-  template_id: string;
-  items: BudgetItem[];
-  total: number;
-  status: 'draft' | 'sent' | 'approved' | 'rejected';
-  created_at: string;
-  updated_at: string;
+    id: string;
+    user_id: string;
+    client_id: string;
+    template_id: string;
+    items: BudgetItem[];
+    total: number;
+    status: 'draft' | 'sent' | 'approved' | 'rejected';
+    created_at: string;
+    updated_at: string;
 }
 
 export interface WhatsappChat {
@@ -147,7 +143,7 @@ export interface WhatsappChat {
     user_id: string;
     contact_name: string;
     contact_phone: string;
-    last_message: string | null;
+    last_message: string;
     last_message_at: string;
     unread_count: number;
     created_at: string;
@@ -160,4 +156,35 @@ export interface WhatsappMessage {
     content: string;
     is_from_me: boolean;
     created_at: string;
+}
+
+// --- AI Agent Types ---
+
+export interface KnowledgeSource {
+  id: string;
+  type: 'file';
+  fileName: string;
+  status: 'uploaded' | 'processing' | 'ready' | 'error';
+}
+
+export interface AgentIntegration {
+  id: string;
+  channel: 'whatsapp';
+  channel_id: string; // e.g., phone number
+  is_active: boolean;
+}
+
+export interface AIAgent {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'active' | 'inactive';
+  llm_model: 'gemini-2.5-flash' | 'openai/gpt-4o' | 'anthropic/claude-3.5-sonnet';
+  api_key: string | null; // Stored securely
+  system_prompt: string;
+  knowledge_sources: KnowledgeSource[];
+  integrations: AgentIntegration[];
+  created_at: string;
+  updated_at: string;
 }

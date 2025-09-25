@@ -2,6 +2,8 @@ import * as React from 'react';
 import { Bell, Webhook, QrCode, Sun, Moon } from './icons/index.ts';
 import WhatsappConnectModal from './WhatsappConnectModal.tsx';
 import ViewHeader from './ViewHeader.tsx';
+import FeaturePreviewTooltip from './FeaturePreviewTooltip.tsx';
+import { FEATURE_PREVIEWS } from '../constants.ts';
 
 type Theme = 'light' | 'dark';
 
@@ -100,13 +102,17 @@ const SettingsView: React.FC<SettingsViewProps> = ({ theme, onThemeChange, showB
           description={isWhatsappConnected ? "Sua conta está conectada e pronta para enviar mensagens." : "Conecte sua conta do WhatsApp para automações."}
         >
           {isWhatsappConnected ? (
-             <button className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600">
-                Desconectar
-            </button>
+             <FeaturePreviewTooltip title={FEATURE_PREVIEWS.omnichannel.title} description={FEATURE_PREVIEWS.omnichannel.description}>
+                <button className="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 opacity-50 cursor-not-allowed">
+                    Desconectar
+                </button>
+            </FeaturePreviewTooltip>
           ) : (
-            <button onClick={() => setWhatsappModalOpen(true)} className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">
-                Conectar
-            </button>
+            <FeaturePreviewTooltip title={FEATURE_PREVIEWS.omnichannel.title} description={FEATURE_PREVIEWS.omnichannel.description}>
+                <button className="w-full px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 opacity-50 cursor-not-allowed">
+                    Conectar
+                </button>
+            </FeaturePreviewTooltip>
           )}
         </SettingCard>
 
@@ -115,9 +121,11 @@ const SettingsView: React.FC<SettingsViewProps> = ({ theme, onThemeChange, showB
           title="Integrações e API"
           description="Conecte com outras ferramentas e acesse sua chave de API."
         >
-           <button className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600">
-            Ver Opções
-          </button>
+           <FeaturePreviewTooltip title={FEATURE_PREVIEWS.integrations.title} description={FEATURE_PREVIEWS.integrations.description}>
+               <button className="w-full px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 opacity-50 cursor-not-allowed">
+                Ver Opções
+              </button>
+           </FeaturePreviewTooltip>
         </SettingCard>
       </div>
       

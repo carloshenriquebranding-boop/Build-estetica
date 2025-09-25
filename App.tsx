@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -35,8 +33,11 @@ import Chatbot from './components/Chatbot.tsx';
 import { Loader2 } from './components/icons/Loader2.tsx';
 import CampaignsView from './components/CampaignsView.tsx';
 import BudgetView from './components/BudgetView.tsx';
+import IntegrationsView from './components/IntegrationsView.tsx';
+import LandingPage from './components/LandingPage.tsx';
 
-type AuthState = 'unauthenticated' | 'selecting_role' | 'in_crm' | 'in_admin' | 'blocked' | 'loading';
+
+type AuthState = 'landing' | 'unauthenticated' | 'selecting_role' | 'in_crm' | 'in_admin' | 'blocked' | 'loading';
 type Theme = 'light' | 'dark';
 
 const getInitialTheme = (): Theme => {
@@ -105,45 +106,33 @@ const App: React.FC = () => {
       setTheme(newTheme);
   };
 
-  // Real-time Authentication Listener
+  // Mock Authentication and Profile Loading (Replaces Supabase auth listener)
   React.useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        try {
-          let profile = await db.getUserProfile(session.user.id);
-          
-          if (!profile) {
-              console.log("No profile found for user, attempting to create one.");
-              profile = await db.createProfileForUser(session.user);
-              // For new users, seed the database with initial mock data.
-              console.log("New user detected, seeding initial mock data...");
-              await db.seedInitialData(session.user.id);
-              console.log("Mock data seeding complete.");
-          }
-          
-          setUserProfile(profile);
-        } catch (error) {
-          // Improved error logging to provide more details than "[object Object]"
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          console.error("--- DETAILED PROFILE FETCH/CREATE ERROR ---", errorMessage);
-          console.error("Full error object:", error);
-          setUserProfile(null);
+    const mockLogin = async () => {
+        const profile = await db.getUserProfile('mock-user-id-123'); // Get mocked profile
+        if (profile) {
+            setUserProfile(profile);
+            if (profile.is_active === false) {
+                setAuthState('blocked');
+            } else if (profile.role === 'admin') {
+                setAuthState('selecting_role'); // Let admin choose which panel to enter
+            } else {
+                setAuthState('in_crm');
+            }
+        } else {
+            // Fallback for if mock fails, show landing page first
+            setAuthState('landing');
         }
-      } else {
-        setUserProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    };
+    mockLogin();
   }, []);
 
-  // Data Loading and Auth State Determination
+
+  // Data Loading for CRM - runs only when entering the CRM view
   React.useEffect(() => {
-    if (userProfile) {
-      setAuthState('loading');
+    if (authState === 'in_crm') {
       setIsLoading(true);
-      
-      const loadAppData = async () => {
+      const loadCrmData = async () => {
         try {
           const [
             stagesData, clientsData, servicesData, notesData,
@@ -161,34 +150,26 @@ const App: React.FC = () => {
           setTasks(tasksData);
           setBudgets(budgetsData);
 
-          // Templates are part of the user profile
-          setPrescriptionTemplate(userProfile.prescription_template || null);
-          setBudgetTemplate(userProfile.budget_template || DEFAULT_BUDGET_TEMPLATE);
-          
-          if (userProfile.is_active === false) {
-            setAuthState('blocked');
-          } else if (userProfile.role === 'admin') {
-            setAuthState('selecting_role');
-          } else {
-            setAuthState('in_crm');
+          if (userProfile) {
+              setPrescriptionTemplate(userProfile.prescription_template || null);
+              setBudgetTemplate(userProfile.budget_template || DEFAULT_BUDGET_TEMPLATE);
           }
         } catch (error) {
-          console.error("Failed to load app data. This might be due to RLS policies. Logging out.", error);
-          alert("Erro ao carregar dados. Verifique sua conexão e as permissões do banco de dados (RLS).");
-          await supabase.auth.signOut();
-          setAuthState('unauthenticated');
+          console.error("Failed to load CRM data:", error);
+          alert("Erro ao carregar os dados do CRM.");
         } finally {
             setIsLoading(false);
         }
       };
-      loadAppData();
-    } else {
-      setAuthState('unauthenticated');
-      setIsLoading(false);
+      loadCrmData();
     }
-  }, [userProfile]);
+  }, [authState, userProfile]); // Depends on authState to trigger the load
   
   // --- Handlers ---
+  const handleNavigateToAuth = () => {
+    setAuthState('unauthenticated');
+  };
+  
   const handleRoleSelect = (role: 'crm' | 'admin') => {
       if (role === 'crm') {
           setAuthState('in_crm');
@@ -269,7 +250,54 @@ const App: React.FC = () => {
     setClients(prev => prev.map(c => c.id === clientId ? updatedClient : c));
   };
   
-  const handleAddClient = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>, stageId: string): Promise<Client | undefined> => {
+  const handleReorderClient = async (draggedClientId: string, targetClientId: string) => {
+    const clientsCopy = [...clients];
+    
+    const dragIndex = clientsCopy.findIndex(c => c.id === draggedClientId);
+    const targetIndex = clientsCopy.findIndex(c => c.id === targetClientId);
+
+    if (dragIndex === -1 || targetIndex === -1) {
+        return;
+    }
+
+    const draggedClient = clientsCopy[dragIndex];
+    const targetClient = clientsCopy[targetIndex];
+
+    if (!draggedClient || !targetClient || draggedClient.stage_id !== targetClient.stage_id) {
+        return;
+    }
+    
+    // Perform the move in the array
+    const [removed] = clientsCopy.splice(dragIndex, 1);
+    clientsCopy.splice(targetIndex, 0, removed);
+    
+    // Now, update the 'order' property for all clients in the affected stage
+    const stageId = draggedClient.stage_id;
+    const clientsToUpdateForDB: Client[] = [];
+    let currentOrder = 0;
+    
+    const updatedClients = clientsCopy.map(client => {
+      if (client.stage_id === stageId) {
+        const newOrder = currentOrder++;
+        if (client.order !== newOrder) {
+          const updatedClient = { ...client, order: newOrder };
+          clientsToUpdateForDB.push(updatedClient);
+          return updatedClient;
+        }
+      }
+      return client;
+    });
+
+    // Optimistically update the UI state
+    setClients(updatedClients);
+
+    // Persist the changes to the database
+    if (clientsToUpdateForDB.length > 0) {
+      await db.updateClientsOrder(clientsToUpdateForDB);
+    }
+  };
+
+  const handleAddClient = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at' | 'order'>, stageId: string): Promise<Client | undefined> => {
     const newClient = await db.addClient(clientData, stageId);
     setClients(prev => [...prev, newClient]);
     return newClient;
@@ -403,24 +431,42 @@ const App: React.FC = () => {
   }
 
   const renderView = () => {
-    if (isLoading || !userProfile) {
+    // FIX: Moved handleBack declaration before its usage to fix a block-scoped variable error.
+    const handleBack = () => setActiveView('dashboard');
+
+    if (authState === 'in_admin') {
+        return <AdminView showBackButton={activeView !== 'admin_panel'} onBack={handleBack} />;
+    }
+    
+    // For CRM view, show loader until data is fetched
+    if (isLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-pink-500" /></div>;
     }
     
     const showBackButton = activeView !== 'dashboard';
-    const handleBack = () => setActiveView('dashboard');
     
-    if (authState === 'in_admin') {
-        return <AdminView showBackButton={activeView !== 'admin_panel'} onBack={() => setActiveView('dashboard')} />;
-    }
-
     switch (activeView) {
       case 'dashboard':
         return <DashboardView clients={clients} appointments={appointments} transactions={transactions} tasks={tasks} services={services} stages={stages} showBackButton={showBackButton} onBack={handleBack} setActiveView={setActiveView} />;
       case 'kanban':
-        return <KanbanBoard stages={stages} clients={clients} clientTasks={tasks.filter(t => t.client_id) as ClientTask[]} services={services} notes={notes} onNavigateToNotes={handleNavigateToNotes} onClientStageChange={handleClientStageChange} onAddClient={handleAddClient} onOpenEditClientModal={handleOpenEditClientModal} onAddStage={handleAddStage} onUpdateStage={handleUpdateStage} onDeleteStage={handleDeleteStage} onAddClientTask={handleAddClientTask} onToggleClientTask={handleToggleClientTask} onDeleteClientTask={handleDeleteClientTask} showBackButton={showBackButton} onBack={handleBack} />;
+        return <KanbanBoard stages={stages} clients={clients} clientTasks={tasks.filter(t => t.client_id) as ClientTask[]} services={services} notes={notes} onNavigateToNotes={handleNavigateToNotes} onClientStageChange={handleClientStageChange} onReorderClient={handleReorderClient} onAddClient={handleAddClient} onOpenEditClientModal={handleOpenEditClientModal} onAddStage={handleAddStage} onUpdateStage={handleUpdateStage} onDeleteStage={handleDeleteStage} onAddClientTask={handleAddClientTask} onToggleClientTask={handleToggleClientTask} onDeleteClientTask={handleDeleteClientTask} showBackButton={showBackButton} onBack={handleBack} />;
       case 'clients':
-        return <ClientsView clients={clients} stages={stages} services={services} onAddClient={(data) => handleAddClient(data, stages[0].id)} onOpenEditClientModal={handleOpenEditClientModal} showBackButton={showBackButton} onBack={handleBack} />;
+        return <ClientsView 
+          clients={clients} 
+          stages={stages} 
+          services={services} 
+          onAddClient={(data) => {
+              const firstStageId = stages[0]?.id;
+              if (!firstStageId) {
+                  alert("Por favor, crie um estágio no Funil (Kanban) antes de adicionar um novo cliente.");
+                  return Promise.resolve(undefined);
+              }
+              return handleAddClient(data, firstStageId);
+          }} 
+          onOpenEditClientModal={handleOpenEditClientModal} 
+          showBackButton={showBackButton} 
+          onBack={handleBack} 
+        />;
       case 'calendar':
         return <CalendarView appointments={appointments} onOpenModal={handleOpenAppointmentModal} onUpdateAppointmentDate={handleUpdateAppointmentDate} showBackButton={showBackButton} onBack={handleBack} />;
       case 'services':
@@ -432,19 +478,19 @@ const App: React.FC = () => {
       case 'notes':
         return <NotesView notes={notes} clients={clients} onSave={handleSaveNote} onDelete={handleDeleteNote} initialSearchTerm={notesSearchTerm} onSearchTermChange={setNotesSearchTerm} showBackButton={showBackButton} onBack={handleBack} />;
       case 'omnichannel':
-          return <OmnichannelView stages={stages} services={services} onAddClient={({ stage_id, ...data }) => handleAddClient(data, stage_id)} showBackButton={showBackButton} onBack={handleBack} />;
+          return <OmnichannelView stages={stages} services={services} onAddClient={({ stage_id, ...data }: Omit<Client, 'id' | 'user_id' | 'created_at' | 'order'> & {stage_id: string}) => handleAddClient(data, stage_id)} showBackButton={showBackButton} onBack={handleBack} />;
       case 'prescription':
           const handleSavePrescriptionNote = async (noteData: Omit<Note, 'id'| 'user_id'>) => {
              await handleSaveNote(noteData);
              alert("Prescrição salva como anotação!");
           };
-          return <PrescriptionView clients={clients} initialTemplate={prescriptionTemplate} userProfile={userProfile} onTemplateChange={handlePrescriptionTemplateChange} onSaveNote={handleSavePrescriptionNote} showBackButton={showBackButton} onBack={handleBack} />;
+          return <PrescriptionView clients={clients} initialTemplate={prescriptionTemplate} userProfile={userProfile!} onTemplateChange={handlePrescriptionTemplateChange} onSaveNote={handleSavePrescriptionNote} showBackButton={showBackButton} onBack={handleBack} />;
       case 'budget':
         return <BudgetView 
             clients={clients}
             services={services}
             stages={stages}
-            userProfile={userProfile}
+            userProfile={userProfile!}
             initialTemplateData={budgetTemplate || DEFAULT_BUDGET_TEMPLATE}
             budgets={budgets}
             onTemplateSave={handleBudgetTemplateChange}
@@ -455,10 +501,14 @@ const App: React.FC = () => {
         />;
       case 'campaigns':
         return <CampaignsView clients={clients} stages={stages} showBackButton={showBackButton} onBack={handleBack} />;
+      case 'ai_agents':
+        return <AIAgentsView showBackButton={showBackButton} onBack={handleBack} />;
       case 'profile':
-        return <ProfileView profile={userProfile} onProfileUpdate={handleProfileUpdate} showBackButton={showBackButton} onBack={handleBack} />;
+        return <ProfileView profile={userProfile!} onProfileUpdate={handleProfileUpdate} showBackButton={showBackButton} onBack={handleBack} />;
       case 'settings':
         return <SettingsView theme={theme} onThemeChange={handleThemeChange} showBackButton={showBackButton} onBack={handleBack} />;
+      case 'integrations':
+        return <IntegrationsView showBackButton={showBackButton} onBack={handleBack} />;
       case 'admin_panel':
         return <AdminView showBackButton={showBackButton} onBack={handleBack} />;
       default:
@@ -468,6 +518,9 @@ const App: React.FC = () => {
   
   if (authState === 'loading') {
     return <div className="flex h-screen items-center justify-center bg-stone-50 dark:bg-slate-950"><Loader2 className="w-8 h-8 animate-spin text-pink-500" /></div>;
+  }
+  if (authState === 'landing') {
+    return <LandingPage onNavigateToAuth={handleNavigateToAuth} />;
   }
   if (authState === 'unauthenticated') {
     return <AuthView />;

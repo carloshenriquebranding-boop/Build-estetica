@@ -175,10 +175,12 @@ const SearchView: React.FC<SearchViewProps> = ({
                     )}
                     {results.length > 0 && (
                         <div className="space-y-6">
-                            {Object.entries(groupedResults).map(([key, resItems]) => (
+                            {(Object.keys(groupedResults) as Array<SearchResult['type']>).map(key => {
+                                const resItems = groupedResults[key];
+                                return (
                                 <div key={key}>
                                     <h3 className="text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 mb-2">
-                                        {groupConfig[key as SearchResult['type']].title}
+                                        {groupConfig[key].title}
                                     </h3>
                                     <ul className="space-y-1">
                                         {resItems.map(result => {
@@ -195,7 +197,7 @@ const SearchView: React.FC<SearchViewProps> = ({
                                         })}
                                     </ul>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     )}
                 </main>

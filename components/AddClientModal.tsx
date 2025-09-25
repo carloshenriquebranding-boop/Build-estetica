@@ -1,30 +1,35 @@
 
+
+
 import * as React from 'react';
-import type { Client, Service } from '../types.ts';
+import type { Client, Service, Stage } from '../types.ts';
 import { X } from './icons/X.tsx';
 import { Loader2 } from './icons/Loader2.tsx';
 import { INPUT_CLASSES } from '../constants.ts';
+import AvatarUploader from './AvatarUploader.tsx';
 
 interface AddClientModalProps {
+  stages: Stage[];
   services: Service[];
   onClose: () => void;
-  // Fix: Omitted `created_at` from the type as it's handled by the database.
-  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => void;
+  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'created_at' | 'order'>, stageId: string) => void;
   isSubmitting: boolean;
 }
 
-const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAddClient, isSubmitting }) => {
+const AddClientModal: React.FC<AddClientModalProps> = ({ stages, services, onClose, onAddClient, isSubmitting }) => {
   const [name, setName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [treatment, setTreatment] = React.useState(services[0]?.name || '');
   const [description, setDescription] = React.useState('');
+  const [stageId, setStageId] = React.useState(stages[0]?.id || '');
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && phone.trim() && treatment.trim()) {
-      // Fix: Removed `created_at` from the object literal to match the updated prop type.
-      onAddClient({ name, phone, email, treatment, description });
+    if (name.trim() && phone.trim() && treatment.trim() && stageId) {
+      onAddClient({ name, phone, email, treatment, description, avatar_url: avatarUrl }, stageId);
     }
   };
 
@@ -38,7 +43,24 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ services, onClose, onAd
           </button>
         </div>
         <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="flex justify-center">
+                <AvatarUploader currentAvatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
+            </div>
+            <div>
+              <label htmlFor="stageId" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Estágio do Funil</label>
+              <select
+                id="stageId"
+                value={stageId}
+                onChange={(e) => setStageId(e.target.value)}
+                required
+                className={INPUT_CLASSES}
+              >
+                {stages.map(stage => (
+                  <option key={stage.id} value={stage.id}>{stage.title}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Completo</label>
               <input

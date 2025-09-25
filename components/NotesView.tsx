@@ -20,7 +20,7 @@ import { INPUT_CLASSES } from '../constants.ts';
 interface NotesViewProps {
   notes: Note[];
   clients: Client[];
-  // Fix: Omitted `user_id` from the save handler type.
+  // Fix: Omitted user_id from the save handler type.
   onSave: (data: Omit<Note, 'id' | 'user_id'> & { id?: string }) => Promise<Note>;
   onDelete: (id: string) => Promise<void>;
   initialSearchTerm: string;
@@ -72,12 +72,24 @@ const NotesView: React.FC<NotesViewProps> = ({ notes, clients, onSave, onDelete,
     if (selectedNote) {
       setTitle(selectedNote.title);
       setClientId(selectedNote.client_id);
-      try {
-        const content = JSON.parse(selectedNote.content);
-        editor?.commands.setContent(content, { emitUpdate: false });
-      } catch (e) {
-        editor?.commands.setContent(`<p>${selectedNote.content}</p>`, { emitUpdate: false });
+      
+      let contentToSet: any = '';
+      // Defensively check for content before trying to parse it.
+      if (selectedNote.content && typeof selectedNote.content === 'string') {
+        try {
+          // Ensure it's a non-empty JSON string before parsing.
+          contentToSet = JSON.parse(selectedNote.content);
+        } catch (e) {
+          // If parsing fails, it's likely plain text or malformed. Use as is.
+          console.warn("Note content is not valid JSON, treating as plain text:", selectedNote.content);
+          contentToSet = selectedNote.content;
+        }
+      } else if (selectedNote.content) {
+        // Content might already be a JSON object
+        contentToSet = selectedNote.content;
       }
+      
+      editor?.commands.setContent(contentToSet, { emitUpdate: false });
     } else {
       setTitle('');
       setClientId(null);

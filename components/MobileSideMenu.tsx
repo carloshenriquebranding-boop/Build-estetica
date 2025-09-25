@@ -1,6 +1,8 @@
+
 import * as React from 'react';
 import type { UserProfile } from '../types.ts';
 import { X, Home, LayoutGrid, Users, CalendarDays, MessageSquare, Briefcase, DollarSign, CheckSquare, FileText, FileSpreadsheet, UserCircle, Settings, ShieldCheck, LogOut, MoreHorizontal } from './icons/index.ts';
+import { supabase } from '../services/supabaseClient.ts';
 
 interface MobileSideMenuProps {
   isOpen: boolean;
@@ -67,7 +69,12 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ isOpen, onClose, active
         onClose();
     };
 
-    const handleLogout = () => window.location.reload();
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error logging out:', error);
+        }
+    };
     
     const userMenuItems = [
         { view: 'profile', label: 'Meu Perfil', icon: <UserCircle className="w-5 h-5" /> },

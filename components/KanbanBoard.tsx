@@ -1,4 +1,5 @@
 
+
 import * as React from 'react';
 import type { Stage, Client, ClientTask, Service, Note } from '../types.ts';
 import KanbanColumn from './KanbanColumn.tsx';
@@ -6,6 +7,7 @@ import AddStageColumn from './AddStageColumn.tsx';
 import AddClientModal from './AddClientModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
 import ViewHeader from './ViewHeader.tsx';
+import { Plus } from './icons/Plus.tsx';
 
 interface KanbanBoardProps {
   stages: Stage[];
@@ -15,8 +17,8 @@ interface KanbanBoardProps {
   notes: Note[];
   onNavigateToNotes: (searchTerm: string) => void;
   onClientStageChange: (clientId: string, newStageId: string) => Promise<void>;
-  // Fix: Changed return type from Promise<void> to Promise<Client | undefined> to match the handler in App.tsx. Also updated clientData type.
-  onAddClient: (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>, stageId: string) => Promise<Client | undefined>;
+  onReorderClient: (draggedClientId: string, targetClientId: string) => Promise<void>;
+  onAddClient: (clientData: Omit<Client, 'id' | 'user_id' | 'created_at' | 'order'>, stageId: string) => Promise<Client | undefined>;
   onOpenEditClientModal: (client: Client) => void;
   onAddStage: (title: string) => Promise<void>;
   onUpdateStage: (stageId: string, updates: Partial<Omit<Stage, 'id'>>) => Promise<void>;
@@ -55,12 +57,11 @@ const StageSwitcher: React.FC<{
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ 
   stages, clients, clientTasks, services, notes, onNavigateToNotes,
-  onClientStageChange, onAddClient, onOpenEditClientModal, onAddStage,
+  onClientStageChange, onReorderClient, onAddClient, onOpenEditClientModal, onAddStage,
   onUpdateStage, onDeleteStage, onAddClientTask, onToggleClientTask, onDeleteClientTask,
   showBackButton, onBack
 }) => {
   const [isAddClientModalOpen, setAddClientModalOpen] = React.useState(false);
-  const [stageForNewClient, setStageForNewClient] = React.useState<string | null>(null);
   const [stageToDelete, setStageToDelete] = React.useState<Stage | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -86,18 +87,11 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     });
   };
 
-  const handleOpenAddClientModal = (stageId: string) => {
-    setStageForNewClient(stageId);
-    setAddClientModalOpen(true);
-  };
-
-  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'stage_id' | 'user_id' | 'created_at'>) => {
-    if (!stageForNewClient) return;
+  const handleAddClientSubmit = async (clientData: Omit<Client, 'id' | 'user_id' | 'created_at' | 'order'>, stageId: string) => {
     setIsSubmitting(true);
-    await onAddClient(clientData, stageForNewClient);
+    await onAddClient(clientData, stageId);
     setIsSubmitting(false);
     setAddClientModalOpen(false);
-    setStageForNewClient(null);
   };
    
   const handleOpenDeleteModal = (stage: Stage) => {
@@ -120,11 +114,30 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     setStageToDelete(null);
   };
   
+  const getSortedStageClients = (stageId: string) => {
+    return clients
+      .filter(client => client.stage_id === stageId)
+      .sort((a, b) => {
+        // FIX: Added fallback sorting for when the 'order' property is missing from client data
+        // due to the database schema not having the 'order' column.
+        if (typeof a.order === 'number' && typeof b.order === 'number') {
+            return a.order - b.order;
+        }
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+  };
+  
   const selectedStage = stages.find(s => s.id === selectedMobileStageId);
    
   return (
     <div className="flex flex-col h-full">
-        <ViewHeader title="Funil de Clientes" showBackButton={showBackButton} onBack={onBack} />
+        <ViewHeader title="Funil de Clientes" showBackButton={showBackButton} onBack={onBack}>
+          <button onClick={() => setAddClientModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
+            <Plus className="w-5 h-5" />
+            <span className="hidden sm:inline">Novo Cliente</span>
+            <span className="sm:hidden">Novo</span>
+          </button>
+        </ViewHeader>
         
         {/* Mobile Stage Switcher */}
         <div className="md:hidden">
@@ -134,7 +147,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         {/* Desktop Kanban Board */}
         <div className="hidden md:flex flex-grow items-start gap-6 overflow-x-auto pb-4 kanban-scroll">
             {stages.map(stage => {
-                const stageClients = clients.filter(client => client.stage_id === stage.id);
+                const stageClients = getSortedStageClients(stage.id);
                 return (
                     <KanbanColumn
                         key={stage.id}
@@ -142,7 +155,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         clients={stageClients}
                         clientTasks={clientTasks}
                         onDropClient={onClientStageChange}
-                        onOpenAddClientModal={handleOpenAddClientModal}
+                        onReorderClient={onReorderClient}
                         onOpenEditClientModal={onOpenEditClientModal}
                         onUpdateStage={onUpdateStage}
                         onDeleteStage={() => handleOpenDeleteModal(stage)}
@@ -160,10 +173,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                  <KanbanColumn
                     key={selectedStage.id}
                     stage={selectedStage}
-                    clients={clients.filter(client => client.stage_id === selectedStage.id)}
+                    clients={getSortedStageClients(selectedStage.id)}
                     clientTasks={clientTasks}
                     onDropClient={onClientStageChange}
-                    onOpenAddClientModal={handleOpenAddClientModal}
+                    onReorderClient={onReorderClient}
                     onOpenEditClientModal={onOpenEditClientModal}
                     onUpdateStage={onUpdateStage}
                     onDeleteStage={() => handleOpenDeleteModal(selectedStage)}
@@ -176,8 +189,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
 
 
-        {isAddClientModalOpen && stageForNewClient && (
+        {isAddClientModalOpen && (
             <AddClientModal
+                stages={stages}
                 services={services}
                 onClose={() => setAddClientModalOpen(false)}
                 onAddClient={handleAddClientSubmit}

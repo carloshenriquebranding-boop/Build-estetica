@@ -13,7 +13,7 @@ interface KanbanColumnProps {
   clients: Client[];
   clientTasks: ClientTask[];
   onDropClient: (clientId: string, newStageId: string) => void;
-  onOpenAddClientModal: (stageId: string) => void;
+  onReorderClient: (draggedClientId: string, targetClientId: string) => void;
   onOpenEditClientModal: (client: Client) => void;
   onUpdateStage: (stageId: string, updates: Partial<Omit<Stage, 'id'>>) => void;
   onDeleteStage: (stageId: string) => void;
@@ -22,7 +22,7 @@ interface KanbanColumnProps {
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ 
-    stage, clients, clientTasks, onDropClient, onOpenAddClientModal, 
+    stage, clients, clientTasks, onDropClient, onReorderClient,
     onOpenEditClientModal, onUpdateStage, onDeleteStage, isCollapsed, onToggleCollapse
 }) => {
   const dropRef = React.useRef<HTMLDivElement>(null);
@@ -120,21 +120,16 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
 
       {/* Column Body */}
       <div ref={dropRef} className={`flex-grow p-3 space-y-4 overflow-y-auto transition-colors ${isOver ? 'bg-pink-50 dark:bg-pink-900/20' : ''}`} style={{minHeight: '100px'}}>
-        {clients.map(client => (
+        {clients.map((client, index) => (
           <ClientCard 
             key={client.id}
             client={client}
             tasks={clientTasks.filter(task => task.client_id === client.id)}
             onCardClick={() => onOpenEditClientModal(client)}
+            onReorderClient={onReorderClient}
+            index={index}
           />
         ))}
-         <button 
-          onClick={() => onOpenAddClientModal(stage.id)}
-          className="w-full flex items-center justify-center gap-2 p-3 text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:bg-stone-300/70 dark:hover:bg-slate-800/80 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-        >
-          <PlusCircle className="w-5 h-5" />
-          <span>Adicionar cliente</span>
-        </button>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import type { BudgetTemplateData, UserProfile, Client, Budget, BudgetItem, Servi
 import ColorPicker from './ColorPicker.tsx';
 import LogoUploader from './LogoUploader.tsx';
 import NewBudgetModal from './NewBudgetModal.tsx';
-// Fix: Imported the 'X' icon component to be used in the item removal button.
 import { Save, Loader2, Send, Plus, Trash, X } from './icons/index.ts';
 import { INPUT_CLASSES } from '../constants.ts';
 import TemplateClassic from './budget_templates/TemplateClassic.tsx';
@@ -57,9 +56,17 @@ const TemplateCustomizerView: React.FC<BudgetEditorProps> = (props) => {
      setNewClientModalOpen(false);
   }
 
-  const handleItemChange = (index: number, field: keyof Omit<BudgetItem, 'id'>, value: string | number) => {
+  const handleItemChange = (index: number, field: keyof Omit<BudgetItem, 'id'>, value: string) => {
     const newItems = [...budget.items];
-    (newItems[index] as any)[field] = value;
+    const item = { ...newItems[index] };
+
+    if (field === 'quantity' || field === 'unit_price') {
+        item[field] = parseFloat(value) || 0;
+    } else {
+        item[field] = value;
+    }
+    
+    newItems[index] = item;
     setBudget(b => ({ ...b, items: newItems }));
   };
 

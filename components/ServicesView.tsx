@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import type { Service } from '../types.ts';
 import { Plus, Loader2, Pencil, Trash } from './icons/index.ts';
@@ -23,6 +21,11 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
   const [serviceName, setServiceName] = React.useState('');
   const [servicePrice, setServicePrice] = React.useState(0);
   const [serviceDescription, setServiceDescription] = React.useState('');
+
+  const sortedServices = React.useMemo(() => 
+    [...services].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })),
+    [services]
+  );
 
   const handleEdit = (service: Service) => {
     setEditingService(service);
@@ -143,7 +146,7 @@ const ServicesView: React.FC<ServicesViewProps> = ({ services, onAdd, onUpdate, 
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg">
         <ul className="divide-y divide-gray-200 dark:divide-slate-700">
-          {services.map(service => (
+          {sortedServices.map(service => (
             <li key={service.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg">
               <div className="flex-grow pr-4">
                 <p className="font-semibold text-gray-800 dark:text-slate-100">{service.name}</p>

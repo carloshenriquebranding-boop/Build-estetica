@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import { useDrag } from 'react-dnd';
 import type { Appointment } from '../types.ts';
@@ -14,7 +12,7 @@ interface AppointmentCardProps {
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, onCardClick, isCompact = false }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'APPOINTMENT_CARD',
-    item: { id: appointment.id, date: appointment.date.toISOString() },
+    item: { id: appointment.id, date: new Date(appointment.date).toISOString() },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

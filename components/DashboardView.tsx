@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { Client, Appointment, Transaction, Task, Service, Stage } from '../types.ts';
 import {
@@ -129,7 +130,9 @@ const AIAgentsSection: React.FC<{
         acc[appt.treatment] = (acc[appt.treatment] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
-    const [topService] = Object.entries(serviceCounts).sort(([, a], [, b]) => b - a)[0] || ['Limpeza de Pele Profunda'];
+    // FIX: Explicitly cast sorted values to numbers to prevent potential type errors during subtraction.
+    const sortedServices = Object.entries(serviceCounts).sort((a, b) => Number(b[1]) - Number(a[1]));
+    const topService = sortedServices.length > 0 ? sortedServices[0][0] : 'Limpeza de Pele Profunda';
     const carlosSuggestion1 = `O serviço de <strong>${topService}</strong> é o mais procurado. Sugiro criar um pacote promocional com 3 sessões para aumentar o ticket médio.`;
 
     // Find a high-value client who hasn't returned
@@ -148,16 +151,36 @@ const AIAgentsSection: React.FC<{
         appointmentCountsByDay[date.toISOString().split('T')[0]] = 0;
     }
     appointments.forEach(appt => {
-        const dateString = new Date(appt.date).toISOString().split('T')[0];
-        if (appointmentCountsByDay[dateString] !== undefined) {
-            appointmentCountsByDay[dateString]++;
+        if (appt.date && !isNaN(new Date(appt.date).getTime())) {
+            const dateString = new Date(appt.date).toISOString().split('T')[0];
+            if (appointmentCountsByDay[dateString] !== undefined) {
+                appointmentCountsByDay[dateString]++;
+            }
         }
     });
-    const quietestDayString = Object.entries(appointmentCountsByDay).sort(([,a], [,b]) => a - b)[0]?.[0] || '';
-    const quietestDay = new Date(quietestDayString);
-    quietestDay.setTime(quietestDay.getTime() + quietestDay.getTimezoneOffset() * 60 * 1000);
-    const quietestDayName = quietestDay.toLocaleDateString('pt-BR', { weekday: 'long' });
-    const sofiaSuggestion1 = `A próxima <strong>${quietestDayName}</strong> parece ter horários livres. Que tal criar uma oferta "Flash" para preenchê-la?`;
+    
+    // FIX: Explicitly cast sorted values to numbers to prevent potential type errors during subtraction.
+    const sortedDays = Object.entries(appointmentCountsByDay).sort((a, b) => Number(a[1]) - Number(b[1]));
+    let sofiaSuggestion1;
+
+    // FIX: A lógica para encontrar o dia mais tranquilo era frágil e podia causar um erro
+    // (resultando em uma tela preta) se não houvesse agendamentos futuros.
+    // Esta nova verificação garante que só tentamos processar uma data se ela for válida.
+    if (sortedDays.length > 0 && sortedDays[0][0]) {
+        const quietestDay = new Date(sortedDays[0][0]);
+        // Adiciona o fuso horário para evitar que a data mude para o dia anterior
+        quietestDay.setTime(quietestDay.getTime() + quietestDay.getTimezoneOffset() * 60 * 1000);
+        
+        // Verifica se a data é válida antes de usá-la
+        if (!isNaN(quietestDay.getTime())) {
+            const quietestDayName = quietestDay.toLocaleDateString('pt-BR', { weekday: 'long' });
+            sofiaSuggestion1 = `A próxima <strong>${quietestDayName}</strong> parece ter horários livres. Que tal criar uma oferta "Flash" para preenchê-la?`;
+        } else {
+            sofiaSuggestion1 = 'Não foi possível encontrar um dia tranquilo na agenda. Que tal revisar seus próximos agendamentos?';
+        }
+    } else {
+        sofiaSuggestion1 = 'Sua agenda parece bem distribuída! Continue monitorando os horários para maximizar a ocupação.';
+    }
 
     // Find a client stuck in the funnel
     const clientStuckInFunnel = clients.find(c => c.stage_id === 'stage-2');
@@ -258,10 +281,11 @@ const ClinicOverviewInfographic: React.FC<{
     }, {} as Record<string, number>);
     
     return Object.entries(counts)
-      .sort(([, a], [, b]) => b - a)
+      // FIX: Explicitly cast sorted values to numbers to prevent potential type errors during subtraction.
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
       .slice(0, 3);
   }, [appointments]);
-  const maxServiceCount = topServices.length > 0 ? topServices[0][1] : 0;
+  const maxServiceCount = topServices.length > 0 ? Number(topServices[0][1]) : 0;
   
   const weeklyRevenue = React.useMemo(() => {
       const today = new Date();
@@ -273,7 +297,7 @@ const ClinicOverviewInfographic: React.FC<{
       }).reverse();
       
       transactions.forEach(t => {
-          if (t.type === 'income') {
+          if (t.type === 'income' && t.date && !isNaN(new Date(t.date).getTime())) {
               const transactionDate = new Date(t.date).toISOString().split('T')[0];
               const dayData = days.find(d => d.date === transactionDate);
               if (dayData) dayData.revenue += t.amount;
@@ -282,6 +306,8 @@ const ClinicOverviewInfographic: React.FC<{
       return days;
   }, [transactions]);
   const maxWeeklyRevenue = Math.max(...weeklyRevenue.map(d => d.revenue), 1); // Avoid division by zero
+  
+  const firstStageCount = funnelData.length > 0 ? funnelData[0].count : 0;
 
   return (
     <div className="mt-8 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border dark:border-slate-800">
@@ -297,7 +323,7 @@ const ClinicOverviewInfographic: React.FC<{
                 <div className="space-y-2">
                   {funnelData.map((stage, index) => {
                     const color = getClientColor(stage.id); // Using the same hash logic for consistent stage colors
-                    const widthPercentage = funnelData[0].count > 0 ? (stage.count / funnelData[0].count) * 100 : 0;
+                    const widthPercentage = firstStageCount > 0 ? (stage.count / firstStageCount) * 100 : 0;
                     return (
                         <div key={stage.id} className="flex items-center gap-3 text-sm">
                             <span className="w-24 sm:w-28 truncate text-right text-slate-500 dark:text-slate-400 flex-shrink-0">{stage.title}</span>
@@ -325,7 +351,7 @@ const ClinicOverviewInfographic: React.FC<{
                                     <span>{count}</span>
                                 </div>
                                 <div className="w-full bg-stone-200 dark:bg-slate-700 rounded-full h-2 mt-1">
-                                    <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-2 rounded-full" style={{ width: `${(count / maxServiceCount) * 100}%`}}></div>
+                                    <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-2 rounded-full" style={{ width: `${(Number(count) / maxServiceCount) * 100}%`}}></div>
                                 </div>
                             </div>
                         ))}
@@ -367,11 +393,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
     const newClientsThisMonth = clients.length; // Assuming mock data represents a single month
     
     const revenueThisMonth = transactions
-        .filter(t => t.type === 'income' && new Date(t.date) >= startOfMonth)
+        .filter(t => t.type === 'income' && t.date && new Date(t.date) >= startOfMonth)
         .reduce((sum, t) => sum + t.amount, 0);
 
     const appointmentsToday = appointments
-        .filter(a => new Date(a.date).toDateString() === today.toDateString())
+        .filter(a => a.date && new Date(a.date).toDateString() === today.toDateString())
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const pendingTasks = tasks.filter(t => !t.completed);
@@ -384,7 +410,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
                 timestamp: new Date(Date.now() - i * 3600000 * 6), // Faked timestamp
                 text: <>Novo cliente <strong>{item.name}</strong> foi adicionado.</>
             })),
-            ...appointments.map(item => ({
+            ...appointments.filter(item => item.date && !isNaN(new Date(item.date).getTime())).map(item => ({
                 id: `a-${item.id}`,
                 type: 'new_appointment' as const,
                 timestamp: new Date(item.date),
@@ -396,7 +422,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
                 timestamp: new Date(Date.now() - i * 3600000 * 4), // Faked timestamp
                 text: <>Tarefa <strong>{item.title}</strong> foi concluída.</>
             })),
-            ...transactions.filter(t => t.type === 'income').map(item => ({
+            ...transactions.filter(item => item.type === 'income' && item.date && !isNaN(new Date(item.date).getTime())).map(item => ({
                 id: `tr-${item.id}`,
                 type: 'new_transaction' as const,
                 timestamp: new Date(item.date),
@@ -412,6 +438,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const dueDate = new Date(task.due_date);
+        // Fix: Added timezone offset adjustment for consistency with TasksView.
+        dueDate.setTime(dueDate.getTime() + dueDate.getTimezoneOffset() * 60 * 1000);
         dueDate.setHours(0, 0, 0, 0);
         
         const diffTime = dueDate.getTime() - today.getTime();
@@ -447,7 +475,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ clients, appointments, tr
     const tasksWithReminders = tasks
         .map(t => ({ ...t, statusInfo: getTaskStatusInfo(t) }))
         .filter(t => t.statusInfo && t.statusInfo.days <= 7)
-        .sort((a, b) => (a.statusInfo?.days ?? 99) - (b.statusInfo?.days ?? 99))
+        // FIX: Explicitly cast sorted values to numbers to prevent potential type errors during subtraction.
+        .sort((a, b) => Number(a.statusInfo!.days) - Number(b.statusInfo!.days))
         .slice(0, 5);
         
     const clientMap = React.useMemo(() => new Map(clients.map(c => [c.id, c.name])), [clients]);

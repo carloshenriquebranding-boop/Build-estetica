@@ -10,8 +10,7 @@ interface NewClientModalProps {
   onClose: () => void;
   stages: Stage[];
   onClientCreated: (client: Client) => void;
-  // Fix: Updated prop signature to match what is being passed and expected by the handler.
-  onAddNewClient: (clientData: Omit<Client, 'id' | 'user_id' | 'stage_id' | 'treatment' | 'created_at'>, stageId: string) => Promise<Client | undefined>;
+  onAddNewClient: (clientData: Omit<Client, 'id' | 'user_id' | 'stage_id' | 'created_at'>, stageId: string) => Promise<Client | undefined>;
 }
 
 const NewBudgetModal: React.FC<NewClientModalProps> = ({
@@ -28,7 +27,6 @@ const NewBudgetModal: React.FC<NewClientModalProps> = ({
     
     setIsSubmitting(true);
     try {
-        // Fix: The call now matches the updated prop type.
         const newClient = await onAddNewClient({ name, phone }, stageId);
         if (newClient) {
             onClientCreated(newClient);
